@@ -256,9 +256,11 @@
 
 ## 문서
 
-- [프로젝트 기획서](docs/PROJECT_PLAN.md)
-- [MVP 명세서](docs/MVP_SPEC.md)
-- [초기 협업 문서](docs/COLLABORATION_SPEC.md)
+- [프로젝트 기획서](docs/requirements/project-plan.md)
+- [페이지 스펙](docs/requirements/page-spec.md)
+- [기능 명세](docs/requirements/feature-spec.md)
+- [API 명세](docs/api/api-spec.md)
+- [DB 테이블 명세](docs/database/table-spec.md)
 
 ## 향후 확장 아이디어
 
@@ -273,9 +275,10 @@
 
 ## 실행 방법
 
-현재는 간이 프론트 프로토타입이 루트에 구성되어 있습니다.
+현재 간이 프론트 프로토타입은 `frontend` 폴더에 구성되어 있습니다.
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
