@@ -1,52 +1,133 @@
 import { useMemo, useState } from "react";
 
+type Page = "login" | "signup" | "home" | "stock" | "portfolio" | "trades" | "ranking";
+
 type Stock = {
+  id: number;
   code: string;
   name: string;
-  price: number;
-  change: number;
-  volume: string;
+  description: string;
+  currentPrice: number;
+  changeRate: number;
   history: number[];
 };
 
 type Holding = {
-  code: string;
+  stockId: number;
   quantity: number;
-  averagePrice: number;
+  averageBuyPrice: number;
 };
 
 type Trade = {
+  id: number;
   type: "BUY" | "SELL";
-  code: string;
+  stockId: number;
   quantity: number;
   price: number;
-  time: string;
+  createdAt: string;
 };
 
 const initialStocks: Stock[] = [
-  { code: "ALP", name: "Alpha Tech", price: 51200, change: 2.43, volume: "1.2M", history: [36, 42, 38, 51, 48, 64, 58, 74, 80, 92] },
-  { code: "BET", name: "Beta Bio", price: 11850, change: -1.18, volume: "892K", history: [64, 55, 61, 50, 45, 53, 40, 48, 39, 35] },
-  { code: "CRN", name: "Crown Energy", price: 30300, change: 0.72, volume: "530K", history: [40, 43, 41, 47, 52, 56, 50, 58, 61, 65] },
-  { code: "DLT", name: "Delta Mobility", price: 24600, change: 3.91, volume: "1.8M", history: [28, 34, 40, 44, 56, 62, 68, 73, 78, 84] },
-  { code: "ECH", name: "Echo Games", price: 8250, change: -2.36, volume: "774K", history: [72, 68, 60, 57, 62, 54, 49, 44, 47, 41] },
-  { code: "FRN", name: "Front Finance", price: 70100, change: 1.04, volume: "390K", history: [50, 52, 51, 55, 57, 56, 60, 63, 62, 66] },
-  { code: "GLD", name: "Gold Retail", price: 18200, change: 0.31, volume: "610K", history: [44, 46, 45, 47, 48, 51, 50, 53, 55, 57] },
-  { code: "HYP", name: "Hyper AI", price: 96400, change: 6.85, volume: "2.4M", history: [30, 35, 49, 45, 62, 70, 66, 83, 88, 96] },
-  { code: "IVY", name: "Ivy Foods", price: 15100, change: -0.64, volume: "450K", history: [55, 56, 53, 54, 51, 52, 50, 49, 48, 47] }
+  {
+    id: 1,
+    code: "ALP",
+    name: "Alpha Tech",
+    description: "안정적인 기술주",
+    currentPrice: 50000,
+    changeRate: 2.43,
+    history: [42, 48, 44, 52, 58, 62, 57, 69, 74, 82]
+  },
+  {
+    id: 2,
+    code: "BET",
+    name: "Beta Bio",
+    description: "변동성이 큰 바이오주",
+    currentPrice: 12000,
+    changeRate: -1.18,
+    history: [68, 61, 64, 56, 50, 53, 45, 42, 46, 39]
+  },
+  {
+    id: 3,
+    code: "CRN",
+    name: "Crown Energy",
+    description: "에너지 관련 종목",
+    currentPrice: 30000,
+    changeRate: 0.72,
+    history: [38, 42, 41, 47, 51, 55, 53, 59, 61, 65]
+  },
+  {
+    id: 4,
+    code: "DLT",
+    name: "Delta Mobility",
+    description: "모빌리티 관련 종목",
+    currentPrice: 24000,
+    changeRate: 3.91,
+    history: [32, 36, 44, 49, 58, 63, 67, 72, 76, 83]
+  },
+  {
+    id: 5,
+    code: "ECH",
+    name: "Echo Games",
+    description: "게임/엔터 관련 종목",
+    currentPrice: 8000,
+    changeRate: -2.36,
+    history: [72, 67, 61, 56, 59, 51, 47, 43, 46, 40]
+  },
+  {
+    id: 6,
+    code: "FRN",
+    name: "Front Finance",
+    description: "금융 관련 종목",
+    currentPrice: 70000,
+    changeRate: 1.04,
+    history: [46, 49, 48, 52, 55, 54, 59, 61, 60, 64]
+  },
+  {
+    id: 7,
+    code: "GLD",
+    name: "Gold Retail",
+    description: "리테일 관련 종목",
+    currentPrice: 18000,
+    changeRate: 0.31,
+    history: [43, 45, 44, 46, 48, 50, 49, 52, 54, 56]
+  },
+  {
+    id: 8,
+    code: "HYP",
+    name: "Hyper AI",
+    description: "AI 성장주",
+    currentPrice: 95000,
+    changeRate: 6.85,
+    history: [30, 36, 50, 46, 62, 71, 66, 83, 88, 96]
+  },
+  {
+    id: 9,
+    code: "IVY",
+    name: "Ivy Foods",
+    description: "식품 관련 종목",
+    currentPrice: 15000,
+    changeRate: -0.64,
+    history: [55, 56, 53, 54, 51, 52, 50, 49, 48, 47]
+  }
 ];
 
 const initialHoldings: Holding[] = [
-  { code: "ALP", quantity: 18, averagePrice: 48200 },
-  { code: "HYP", quantity: 4, averagePrice: 90200 },
-  { code: "GLD", quantity: 35, averagePrice: 17800 }
+  { stockId: 1, quantity: 18, averageBuyPrice: 48200 },
+  { stockId: 7, quantity: 35, averageBuyPrice: 17800 },
+  { stockId: 8, quantity: 4, averageBuyPrice: 90200 }
 ];
 
-const rankings = [
-  { rank: 1, name: "CryptoMidas", asset: 14892500, profit: 48.9 },
-  { rank: 2, name: "ShadowTrader", asset: 13780120, profit: 37.8 },
-  { rank: 3, name: "LunaCapital", asset: 12204000, profit: 22.0 },
-  { rank: 4, name: "Your Portfolio", asset: 11132400, profit: 11.3 },
-  { rank: 5, name: "GhostOfTheFed", asset: 10340210, profit: 3.4 }
+const initialTrades: Trade[] = [
+  { id: 3, type: "BUY", stockId: 8, quantity: 2, price: 94600, createdAt: "2026-06-23 14:20" },
+  { id: 2, type: "SELL", stockId: 1, quantity: 3, price: 51200, createdAt: "2026-06-23 13:40" },
+  { id: 1, type: "BUY", stockId: 7, quantity: 10, price: 18100, createdAt: "2026-06-23 12:30" }
+];
+
+const rankingUsers = [
+  { nickname: "CryptoMidas", cash: 1489000, stockValue: 13403500 },
+  { nickname: "ShadowTrader", cash: 2320000, stockValue: 11460120 },
+  { nickname: "LunaCapital", cash: 3904000, stockValue: 8300000 },
+  { nickname: "GhostOfTheFed", cash: 7020000, stockValue: 3320210 }
 ];
 
 const formatWon = (value: number) =>
@@ -56,306 +137,666 @@ const formatWon = (value: number) =>
     maximumFractionDigits: 0
   }).format(value);
 
-const formatCompact = (value: number) => value.toLocaleString("ko-KR");
+const formatNumber = (value: number) => Math.round(value).toLocaleString("ko-KR");
 
 function App() {
-  const [screen, setScreen] = useState<"login" | "dashboard">("login");
-  const [selectedCode, setSelectedCode] = useState("HYP");
+  const [page, setPage] = useState<Page>("login");
+  const [selectedStockId, setSelectedStockId] = useState(8);
   const [quantity, setQuantity] = useState(1);
   const [cash, setCash] = useState(10_000_000);
-  const [holdings, setHoldings] = useState(initialHoldings);
-  const [trades, setTrades] = useState<Trade[]>([
-    { type: "BUY", code: "HYP", quantity: 2, price: 94600, time: "14:20" },
-    { type: "SELL", code: "ALP", quantity: 3, price: 51200, time: "13:40" },
-    { type: "BUY", code: "GLD", quantity: 10, price: 18100, time: "12:30" }
-  ]);
+  const [holdings, setHoldings] = useState<Holding[]>(initialHoldings);
+  const [trades, setTrades] = useState<Trade[]>(initialTrades);
+  const [message, setMessage] = useState("");
 
-  const selectedStock = initialStocks.find((stock) => stock.code === selectedCode) ?? initialStocks[0];
+  const selectedStock = initialStocks.find((stock) => stock.id === selectedStockId) ?? initialStocks[0];
 
   const portfolio = useMemo(() => {
     const rows = holdings.map((holding) => {
-      const stock = initialStocks.find((item) => item.code === holding.code)!;
-      const valuation = stock.price * holding.quantity;
-      const principal = holding.averagePrice * holding.quantity;
-      return { ...holding, stock, valuation, profit: valuation - principal };
+      const stock = initialStocks.find((item) => item.id === holding.stockId)!;
+      const valuation = stock.currentPrice * holding.quantity;
+      const principal = holding.averageBuyPrice * holding.quantity;
+      return {
+        ...holding,
+        stock,
+        valuation,
+        profitLoss: valuation - principal
+      };
     });
 
     const stockValue = rows.reduce((sum, row) => sum + row.valuation, 0);
+    const principal = rows.reduce((sum, row) => sum + row.averageBuyPrice * row.quantity, 0);
+
     return {
       rows,
+      cash,
       stockValue,
       totalAsset: cash + stockValue,
-      profit: rows.reduce((sum, row) => sum + row.profit, 0)
+      profitLoss: stockValue - principal
     };
   }, [cash, holdings]);
 
-  const tradeAmount = selectedStock.price * quantity;
+  const userRanking = {
+    nickname: "stockUser",
+    cash: portfolio.cash,
+    stockValue: portfolio.stockValue
+  };
+
+  const rankings = [...rankingUsers, userRanking]
+    .map((user) => ({ ...user, totalAsset: user.cash + user.stockValue }))
+    .sort((a, b) => b.totalAsset - a.totalAsset)
+    .map((user, index) => ({ ...user, rank: index + 1 }));
+
+  const selectedHolding = holdings.find((holding) => holding.stockId === selectedStock.id);
+  const tradeAmount = selectedStock.currentPrice * quantity;
+
+  const goToStock = (stockId: number) => {
+    setSelectedStockId(stockId);
+    setQuantity(1);
+    setMessage("");
+    setPage("stock");
+  };
+
+  const handleLogin = () => {
+    setMessage("");
+    setPage("home");
+  };
+
+  const handleSignup = () => {
+    setMessage("회원가입이 완료되었습니다. 초기 자산 10,000,000원이 지급되었습니다.");
+    setPage("home");
+  };
 
   const handleBuy = () => {
-    if (tradeAmount > cash) return;
+    if (quantity < 1) {
+      setMessage("거래 수량은 1 이상이어야 합니다.");
+      return;
+    }
+
+    if (tradeAmount > cash) {
+      setMessage("보유 현금이 부족합니다.");
+      return;
+    }
+
     setCash((currentCash) => currentCash - tradeAmount);
     setHoldings((current) => {
-      const existing = current.find((holding) => holding.code === selectedStock.code);
-      if (!existing) {
-        return [...current, { code: selectedStock.code, quantity, averagePrice: selectedStock.price }];
+      const owned = current.find((holding) => holding.stockId === selectedStock.id);
+      if (!owned) {
+        return [
+          ...current,
+          {
+            stockId: selectedStock.id,
+            quantity,
+            averageBuyPrice: selectedStock.currentPrice
+          }
+        ];
       }
 
       return current.map((holding) => {
-        if (holding.code !== selectedStock.code) return holding;
-        const totalQuantity = holding.quantity + quantity;
-        const averagePrice =
-          (holding.averagePrice * holding.quantity + selectedStock.price * quantity) / totalQuantity;
-        return { ...holding, quantity: totalQuantity, averagePrice };
+        if (holding.stockId !== selectedStock.id) return holding;
+        const nextQuantity = holding.quantity + quantity;
+        const nextAveragePrice =
+          (holding.averageBuyPrice * holding.quantity + selectedStock.currentPrice * quantity) / nextQuantity;
+
+        return {
+          ...holding,
+          quantity: nextQuantity,
+          averageBuyPrice: nextAveragePrice
+        };
       });
     });
     setTrades((current) => [
-      { type: "BUY", code: selectedStock.code, quantity, price: selectedStock.price, time: "Now" },
+      {
+        id: current.length + 1,
+        type: "BUY",
+        stockId: selectedStock.id,
+        quantity,
+        price: selectedStock.currentPrice,
+        createdAt: "2026-06-23 15:00"
+      },
       ...current
     ]);
+    setMessage(`${selectedStock.code} ${quantity}주 매수가 완료되었습니다.`);
   };
 
   const handleSell = () => {
-    const owned = holdings.find((holding) => holding.code === selectedStock.code);
-    if (!owned || owned.quantity < quantity) return;
+    if (!selectedHolding || selectedHolding.quantity < quantity) {
+      setMessage("보유 주식 수량이 부족합니다.");
+      return;
+    }
 
     setCash((currentCash) => currentCash + tradeAmount);
     setHoldings((current) =>
       current
         .map((holding) =>
-          holding.code === selectedStock.code ? { ...holding, quantity: holding.quantity - quantity } : holding
+          holding.stockId === selectedStock.id
+            ? { ...holding, quantity: holding.quantity - quantity }
+            : holding
         )
         .filter((holding) => holding.quantity > 0)
     );
     setTrades((current) => [
-      { type: "SELL", code: selectedStock.code, quantity, price: selectedStock.price, time: "Now" },
+      {
+        id: current.length + 1,
+        type: "SELL",
+        stockId: selectedStock.id,
+        quantity,
+        price: selectedStock.currentPrice,
+        createdAt: "2026-06-23 15:00"
+      },
       ...current
     ]);
+    setMessage(`${selectedStock.code} ${quantity}주 매도가 완료되었습니다.`);
   };
 
-  if (screen === "login") {
+  if (page === "login") {
     return (
-      <main className="auth-shell">
-        <section className="auth-brand">
-          <div className="logo-mark">S</div>
-          <h1>StockSim</h1>
-          <p>가상 자산으로 주식 매매를 연습하고, 6주 MVP 안에서 투자 게임의 핵심 흐름을 검증합니다.</p>
-          <div className="market-strip">
-            <span>ALP +2.43%</span>
-            <span>HYP +6.85%</span>
-            <span>BET -1.18%</span>
-          </div>
-          <div className="mini-bars">
-            {selectedStock.history.map((value, index) => (
-              <i key={index} style={{ height: `${value}%` }} />
-            ))}
-          </div>
-        </section>
+      <AuthLayout title="로그인" description="더미 계정으로 MVP 화면을 확인하세요.">
+        <label>
+          이메일
+          <input defaultValue="user@example.com" type="email" />
+        </label>
+        <label>
+          비밀번호
+          <input defaultValue="password123" type="password" />
+        </label>
+        <button className="primary-button" onClick={handleLogin}>
+          로그인
+        </button>
+        <button className="ghost-button" onClick={() => setPage("signup")}>
+          회원가입으로 이동
+        </button>
+      </AuthLayout>
+    );
+  }
 
-        <section className="auth-panel">
-          <div>
-            <p className="eyebrow">Team3 Side Project</p>
-            <h2>로그인</h2>
-            <p>더미 계정으로 바로 트레이딩 화면을 확인하세요.</p>
-          </div>
-          <label>
-            이메일
-            <input defaultValue="trader@stocksim.io" type="email" />
-          </label>
-          <label>
-            비밀번호
-            <input defaultValue="password123" type="password" />
-          </label>
-          <button className="primary-button" onClick={() => setScreen("dashboard")}>
-            대시보드 입장
-          </button>
-          <button className="ghost-button" onClick={() => setScreen("dashboard")}>
-            간편 회원가입
-          </button>
-        </section>
-      </main>
+  if (page === "signup") {
+    return (
+      <AuthLayout title="회원가입" description="가입 즉시 가상 현금 10,000,000원이 지급됩니다.">
+        <label>
+          이메일
+          <input defaultValue="new-user@example.com" type="email" />
+        </label>
+        <label>
+          닉네임
+          <input defaultValue="stockUser" />
+        </label>
+        <label>
+          비밀번호
+          <input defaultValue="password123" type="password" />
+        </label>
+        <label>
+          비밀번호 확인
+          <input defaultValue="password123" type="password" />
+        </label>
+        <button className="primary-button" onClick={handleSignup}>
+          회원가입
+        </button>
+        <button className="ghost-button" onClick={() => setPage("login")}>
+          로그인으로 이동
+        </button>
+      </AuthLayout>
     );
   }
 
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand">
-          <div className="logo-mark">S</div>
+        <button className="brand" onClick={() => setPage("home")}>
+          <span className="logo-mark">S</span>
           <strong>StockSim</strong>
-        </div>
+        </button>
         <nav>
-          <button className="active">대시보드</button>
-          <button>포트폴리오</button>
-          <button>거래 내역</button>
-          <button>랭킹</button>
+          <button className={page === "home" ? "active" : ""} onClick={() => setPage("home")}>
+            메인
+          </button>
+          <button className={page === "portfolio" ? "active" : ""} onClick={() => setPage("portfolio")}>
+            포트폴리오
+          </button>
+          <button className={page === "trades" ? "active" : ""} onClick={() => setPage("trades")}>
+            거래 내역
+          </button>
+          <button className={page === "ranking" ? "active" : ""} onClick={() => setPage("ranking")}>
+            랭킹
+          </button>
         </nav>
         <div className="account-card">
           <span>총 자산</span>
           <strong>{formatWon(portfolio.totalAsset)}</strong>
-          <em>{portfolio.profit >= 0 ? "+" : ""}{formatWon(portfolio.profit)}</em>
+          <em className={portfolio.profitLoss >= 0 ? "up" : "down"}>
+            {portfolio.profitLoss >= 0 ? "+" : ""}
+            {formatWon(portfolio.profitLoss)}
+          </em>
         </div>
       </aside>
 
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Market Simulator</p>
-            <h1>Trading Dashboard</h1>
+            <p className="eyebrow">REST API Mock UI</p>
+            <h1>{getPageTitle(page)}</h1>
           </div>
           <div className="top-actions">
             <input placeholder="종목 검색" />
-            <button onClick={() => setScreen("login")}>로그아웃</button>
+            <button onClick={() => setPage("login")}>로그아웃</button>
           </div>
         </header>
 
-        <section className="summary-grid">
-          <article>
-            <span>보유 현금</span>
-            <strong>{formatWon(cash)}</strong>
-            <em>초기 자산 10,000,000원</em>
-          </article>
-          <article>
-            <span>주식 평가금</span>
-            <strong>{formatWon(portfolio.stockValue)}</strong>
-            <em>{portfolio.rows.length}개 종목 보유</em>
-          </article>
-          <article className="positive">
-            <span>평가 손익</span>
-            <strong>{portfolio.profit >= 0 ? "+" : ""}{formatWon(portfolio.profit)}</strong>
-            <em>더미 가격 기준</em>
-          </article>
-        </section>
+        {message && <p className="toast">{message}</p>}
 
-        <section className="main-grid">
-          <article className="market-list panel">
-            <div className="panel-header">
+        {page === "home" && (
+          <HomePage
+            cash={cash}
+            portfolio={portfolio}
+            stocks={initialStocks}
+            onOpenStock={goToStock}
+          />
+        )}
+
+        {page === "stock" && (
+          <StockDetailPage
+            stock={selectedStock}
+            holdingQuantity={selectedHolding?.quantity ?? 0}
+            quantity={quantity}
+            tradeAmount={tradeAmount}
+            onQuantityChange={setQuantity}
+            onBuy={handleBuy}
+            onSell={handleSell}
+            onBack={() => setPage("home")}
+          />
+        )}
+
+        {page === "portfolio" && <PortfolioPage portfolio={portfolio} onOpenStock={goToStock} />}
+
+        {page === "trades" && <TradesPage trades={trades} />}
+
+        {page === "ranking" && <RankingPage rankings={rankings} currentNickname="stockUser" />}
+      </section>
+    </main>
+  );
+}
+
+function AuthLayout({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <main className="auth-shell">
+      <section className="auth-brand">
+        <span className="logo-mark">S</span>
+        <h1>StockSim</h1>
+        <p>더미 주식 데이터와 가상 자산으로 매수/매도, 포트폴리오, 랭킹 흐름을 검증합니다.</p>
+        <div className="market-strip">
+          <span>회원가입</span>
+          <span>주식 조회</span>
+          <span>매수/매도</span>
+          <span>랭킹</span>
+        </div>
+        <div className="mini-bars">
+          {[42, 48, 44, 52, 58, 62, 57, 69, 74, 82].map((value, index) => (
+            <i key={index} style={{ height: `${value}%` }} />
+          ))}
+        </div>
+      </section>
+
+      <section className="auth-panel">
+        <p className="eyebrow">Team3 Side Project</p>
+        <h2>{title}</h2>
+        <p>{description}</p>
+        {children}
+      </section>
+    </main>
+  );
+}
+
+function HomePage({
+  cash,
+  portfolio,
+  stocks,
+  onOpenStock
+}: {
+  cash: number;
+  portfolio: ReturnType<typeof usePortfolioShape>;
+  stocks: Stock[];
+  onOpenStock: (stockId: number) => void;
+}) {
+  return (
+    <>
+      <SummaryGrid cash={cash} portfolio={portfolio} />
+      <section className="content-grid home-grid">
+        <article className="panel span-2">
+          <div className="panel-header">
+            <div>
               <h2>주식 목록</h2>
-              <span>9 stocks</span>
+              <span>GET /api/stocks</span>
             </div>
-            {initialStocks.map((stock) => (
-              <button
-                key={stock.code}
-                className={stock.code === selectedCode ? "stock-row selected" : "stock-row"}
-                onClick={() => setSelectedCode(stock.code)}
-              >
-                <span>
-                  <strong>{stock.code}</strong>
-                  <small>{stock.name}</small>
-                </span>
-                <span>
-                  <b>{formatWon(stock.price)}</b>
-                  <em className={stock.change >= 0 ? "up" : "down"}>
-                    {stock.change >= 0 ? "+" : ""}{stock.change}%
-                  </em>
-                </span>
-              </button>
-            ))}
-          </article>
-
-          <article className="chart-panel panel">
-            <div className="panel-header">
-              <div>
-                <h2>{selectedStock.name}</h2>
-                <span>{selectedStock.code} / {selectedStock.volume}</span>
-              </div>
-              <strong>{formatWon(selectedStock.price)}</strong>
-            </div>
-            <div className="chart">
-              {selectedStock.history.map((value, index) => (
-                <i
-                  key={index}
-                  className={index % 4 === 1 ? "warning" : ""}
-                  style={{ height: `${value}%` }}
-                />
-              ))}
-            </div>
-          </article>
-
-          <article className="trade-panel panel">
-            <div className="panel-header">
-              <h2>주문</h2>
-              <span>시장가</span>
-            </div>
-            <div className="stepper">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-              <strong>{quantity}</strong>
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
-            </div>
-            <dl>
-              <div>
-                <dt>예상 금액</dt>
-                <dd>{formatWon(tradeAmount)}</dd>
-              </div>
-              <div>
-                <dt>보유 수량</dt>
-                <dd>{holdings.find((holding) => holding.code === selectedCode)?.quantity ?? 0}주</dd>
-              </div>
-            </dl>
-            <button className="buy-button" onClick={handleBuy}>매수</button>
-            <button className="sell-button" onClick={handleSell}>매도</button>
-          </article>
-
-          <article className="holdings-panel panel">
-            <div className="panel-header">
-              <h2>포트폴리오</h2>
-              <span>{formatWon(portfolio.totalAsset)}</span>
-            </div>
+            <strong>{stocks.length}개 종목</strong>
+          </div>
+          <div className="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>종목</th>
-                  <th>수량</th>
-                  <th>평균가</th>
-                  <th>손익</th>
+                  <th>설명</th>
+                  <th>현재가</th>
+                  <th>등락률</th>
+                  <th>액션</th>
                 </tr>
               </thead>
               <tbody>
-                {portfolio.rows.map((row) => (
-                  <tr key={row.code}>
-                    <td>{row.code}</td>
-                    <td>{row.quantity}</td>
-                    <td>{formatCompact(Math.round(row.averagePrice))}</td>
-                    <td className={row.profit >= 0 ? "up" : "down"}>
-                      {row.profit >= 0 ? "+" : ""}{formatCompact(Math.round(row.profit))}
+                {stocks.map((stock) => (
+                  <tr key={stock.id}>
+                    <td>
+                      <strong>{stock.code}</strong>
+                      <small>{stock.name}</small>
+                    </td>
+                    <td>{stock.description}</td>
+                    <td>{formatWon(stock.currentPrice)}</td>
+                    <td className={stock.changeRate >= 0 ? "up" : "down"}>
+                      {stock.changeRate >= 0 ? "+" : ""}
+                      {stock.changeRate}%
+                    </td>
+                    <td>
+                      <button className="table-button" onClick={() => onOpenStock(stock.id)}>
+                        상세
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </article>
+          </div>
+        </article>
 
-          <article className="activity-panel panel">
-            <div className="panel-header">
-              <h2>거래 내역</h2>
-              <span>latest</span>
-            </div>
-            {trades.slice(0, 5).map((trade, index) => (
-              <div className="activity" key={`${trade.code}-${trade.time}-${index}`}>
-                <b className={trade.type === "BUY" ? "up" : "down"}>{trade.type}</b>
-                <span>{trade.code} {trade.quantity}주</span>
-                <em>{formatWon(trade.price)} · {trade.time}</em>
-              </div>
-            ))}
-          </article>
-
-          <article className="ranking-panel panel">
-            <div className="panel-header">
-              <h2>랭킹</h2>
-              <span>Top 5</span>
-            </div>
-            {rankings.map((item) => (
-              <div className={item.name === "Your Portfolio" ? "rank-row me" : "rank-row"} key={item.name}>
-                <span>#{item.rank}</span>
-                <strong>{item.name}</strong>
-                <em>+{item.profit}%</em>
-                <b>{formatWon(item.asset)}</b>
-              </div>
-            ))}
-          </article>
-        </section>
+        <article className="panel">
+          <div className="panel-header">
+            <h2>오늘의 체크</h2>
+            <span>MVP</span>
+          </div>
+          <ul className="check-list">
+            <li>실제 주식 API 미사용</li>
+            <li>시장가 매수/매도만 지원</li>
+            <li>랭킹은 총 자산 기준</li>
+            <li>거래 성공 시 내역 저장</li>
+          </ul>
+        </article>
       </section>
-    </main>
+    </>
   );
+}
+
+function StockDetailPage({
+  stock,
+  holdingQuantity,
+  quantity,
+  tradeAmount,
+  onQuantityChange,
+  onBuy,
+  onSell,
+  onBack
+}: {
+  stock: Stock;
+  holdingQuantity: number;
+  quantity: number;
+  tradeAmount: number;
+  onQuantityChange: (quantity: number) => void;
+  onBuy: () => void;
+  onSell: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <section className="content-grid detail-grid">
+      <article className="panel chart-panel span-2">
+        <div className="panel-header">
+          <div>
+            <button className="text-button" onClick={onBack}>
+              ← 주식 목록
+            </button>
+            <h2>
+              {stock.name} <span>{stock.code}</span>
+            </h2>
+            <p>{stock.description}</p>
+          </div>
+          <strong>{formatWon(stock.currentPrice)}</strong>
+        </div>
+        <div className="chart">
+          {stock.history.map((value, index) => (
+            <i key={index} className={index % 4 === 1 ? "warning" : ""} style={{ height: `${value}%` }} />
+          ))}
+        </div>
+      </article>
+
+      <article className="panel trade-panel">
+        <div className="panel-header">
+          <h2>시장가 주문</h2>
+          <span>POST /api/trades</span>
+        </div>
+        <label>
+          거래 수량
+          <input
+            min={1}
+            type="number"
+            value={quantity}
+            onChange={(event) => onQuantityChange(Math.max(1, Number(event.target.value)))}
+          />
+        </label>
+        <dl>
+          <div>
+            <dt>예상 거래 금액</dt>
+            <dd>{formatWon(tradeAmount)}</dd>
+          </div>
+          <div>
+            <dt>보유 수량</dt>
+            <dd>{holdingQuantity}주</dd>
+          </div>
+        </dl>
+        <button className="buy-button" onClick={onBuy}>
+          매수
+        </button>
+        <button className="sell-button" onClick={onSell}>
+          매도
+        </button>
+      </article>
+    </section>
+  );
+}
+
+function PortfolioPage({
+  portfolio,
+  onOpenStock
+}: {
+  portfolio: ReturnType<typeof usePortfolioShape>;
+  onOpenStock: (stockId: number) => void;
+}) {
+  return (
+    <>
+      <SummaryGrid cash={portfolio.cash} portfolio={portfolio} />
+      <article className="panel">
+        <div className="panel-header">
+          <div>
+            <h2>보유 종목</h2>
+            <span>GET /api/portfolio/me</span>
+          </div>
+          <strong>{portfolio.rows.length}개</strong>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>종목</th>
+                <th>수량</th>
+                <th>평균 매수가</th>
+                <th>현재가</th>
+                <th>평가 금액</th>
+                <th>손익</th>
+              </tr>
+            </thead>
+            <tbody>
+              {portfolio.rows.map((row) => (
+                <tr key={row.stock.id} onClick={() => onOpenStock(row.stock.id)}>
+                  <td>
+                    <strong>{row.stock.code}</strong>
+                    <small>{row.stock.name}</small>
+                  </td>
+                  <td>{row.quantity}주</td>
+                  <td>{formatWon(row.averageBuyPrice)}</td>
+                  <td>{formatWon(row.stock.currentPrice)}</td>
+                  <td>{formatWon(row.valuation)}</td>
+                  <td className={row.profitLoss >= 0 ? "up" : "down"}>
+                    {row.profitLoss >= 0 ? "+" : ""}
+                    {formatWon(row.profitLoss)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </>
+  );
+}
+
+function TradesPage({ trades }: { trades: Trade[] }) {
+  return (
+    <article className="panel">
+      <div className="panel-header">
+        <div>
+          <h2>거래 내역</h2>
+          <span>GET /api/trades/me</span>
+        </div>
+        <strong>최신순</strong>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>유형</th>
+              <th>종목</th>
+              <th>수량</th>
+              <th>가격</th>
+              <th>총 금액</th>
+              <th>거래 일시</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trades.map((trade) => {
+              const stock = initialStocks.find((item) => item.id === trade.stockId)!;
+              return (
+                <tr key={trade.id}>
+                  <td className={trade.type === "BUY" ? "up" : "down"}>{trade.type}</td>
+                  <td>
+                    <strong>{stock.code}</strong>
+                    <small>{stock.name}</small>
+                  </td>
+                  <td>{trade.quantity}주</td>
+                  <td>{formatWon(trade.price)}</td>
+                  <td>{formatWon(trade.price * trade.quantity)}</td>
+                  <td>{trade.createdAt}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  );
+}
+
+function RankingPage({
+  rankings,
+  currentNickname
+}: {
+  rankings: Array<{ rank: number; nickname: string; cash: number; stockValue: number; totalAsset: number }>;
+  currentNickname: string;
+}) {
+  return (
+    <article className="panel">
+      <div className="panel-header">
+        <div>
+          <h2>자산 랭킹</h2>
+          <span>GET /api/rankings/assets</span>
+        </div>
+        <strong>Top {rankings.length}</strong>
+      </div>
+      <div className="ranking-list">
+        {rankings.map((user) => (
+          <div className={user.nickname === currentNickname ? "rank-row current" : "rank-row"} key={user.nickname}>
+            <span>#{user.rank}</span>
+            <strong>{user.nickname}</strong>
+            <em>현금 {formatWon(user.cash)}</em>
+            <em>주식 {formatWon(user.stockValue)}</em>
+            <b>{formatWon(user.totalAsset)}</b>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function SummaryGrid({
+  cash,
+  portfolio
+}: {
+  cash: number;
+  portfolio: ReturnType<typeof usePortfolioShape>;
+}) {
+  return (
+    <section className="summary-grid">
+      <article>
+        <span>보유 현금</span>
+        <strong>{formatWon(cash)}</strong>
+        <em>초기 자산 10,000,000원</em>
+      </article>
+      <article>
+        <span>주식 평가 금액</span>
+        <strong>{formatWon(portfolio.stockValue)}</strong>
+        <em>{portfolio.rows.length}개 종목 보유</em>
+      </article>
+      <article>
+        <span>총 자산</span>
+        <strong>{formatWon(portfolio.totalAsset)}</strong>
+        <em className={portfolio.profitLoss >= 0 ? "up" : "down"}>
+          손익 {portfolio.profitLoss >= 0 ? "+" : ""}
+          {formatWon(portfolio.profitLoss)}
+        </em>
+      </article>
+    </section>
+  );
+}
+
+function getPageTitle(page: Page) {
+  const titles: Record<Page, string> = {
+    login: "로그인",
+    signup: "회원가입",
+    home: "메인",
+    stock: "주식 상세",
+    portfolio: "포트폴리오",
+    trades: "거래 내역",
+    ranking: "랭킹"
+  };
+
+  return titles[page];
+}
+
+function usePortfolioShape() {
+  return {
+    rows: [] as Array<{
+      stock: Stock;
+      stockId: number;
+      quantity: number;
+      averageBuyPrice: number;
+      valuation: number;
+      profitLoss: number;
+    }>,
+    cash: 0,
+    stockValue: 0,
+    totalAsset: 0,
+    profitLoss: 0
+  };
 }
 
 export default App;
