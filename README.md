@@ -258,6 +258,7 @@
 
 - [프로젝트 기획서](docs/PROJECT_PLAN.md)
 - [MVP 명세서](docs/MVP_SPEC.md)
+- [초기 협업 문서](docs/COLLABORATION_SPEC.md)
 
 ## 향후 확장 아이디어
 
