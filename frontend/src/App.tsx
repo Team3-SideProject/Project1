@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { matchPath, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-type Page = "login" | "signup" | "home" | "stock" | "portfolio" | "trades" | "ranking";
+type Page = "home" | "stock" | "portfolio" | "trades" | "ranking";
 
 type Stock = {
   id: number;
@@ -140,8 +141,11 @@ const formatWon = (value: number) =>
 const formatNumber = (value: number) => Math.round(value).toLocaleString("ko-KR");
 
 function App() {
-  const [page, setPage] = useState<Page>("login");
-  const [selectedStockId, setSelectedStockId] = useState(8);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const stockMatch = matchPath("/stocks/:stockId", location.pathname);
+  const routeStockId = Number(stockMatch?.params.stockId);
+  const selectedStockId = Number.isFinite(routeStockId) && routeStockId > 0 ? routeStockId : 8;
   const [quantity, setQuantity] = useState(1);
   const [cash, setCash] = useState(10_000_000);
   const [holdings, setHoldings] = useState<Holding[]>(initialHoldings);
@@ -190,20 +194,19 @@ function App() {
   const tradeAmount = selectedStock.currentPrice * quantity;
 
   const goToStock = (stockId: number) => {
-    setSelectedStockId(stockId);
     setQuantity(1);
     setMessage("");
-    setPage("stock");
+    navigate(`/stocks/${stockId}`);
   };
 
   const handleLogin = () => {
     setMessage("");
-    setPage("home");
+    navigate("/");
   };
 
   const handleSignup = () => {
     setMessage("회원가입이 완료되었습니다. 초기 자산 10,000,000원이 지급되었습니다.");
-    setPage("home");
+    navigate("/");
   };
 
   const handleBuy = () => {
@@ -288,74 +291,34 @@ function App() {
     setMessage(`${selectedStock.code} ${quantity}주 매도가 완료되었습니다.`);
   };
 
-  if (page === "login") {
-    return (
-      <AuthLayout title="로그인" description="더미 계정으로 MVP 화면을 확인하세요.">
-        <label>
-          이메일
-          <input defaultValue="user@example.com" type="email" />
-        </label>
-        <label>
-          비밀번호
-          <input defaultValue="password123" type="password" />
-        </label>
-        <button className="primary-button" onClick={handleLogin}>
-          로그인
-        </button>
-        <button className="ghost-button" onClick={() => setPage("signup")}>
-          회원가입으로 이동
-        </button>
-      </AuthLayout>
-    );
+  if (location.pathname === "/login") {
+    return <LoginPage onLogin={handleLogin} onGoSignup={() => navigate("/signup")} />;
   }
 
-  if (page === "signup") {
-    return (
-      <AuthLayout title="회원가입" description="가입 즉시 가상 현금 10,000,000원이 지급됩니다.">
-        <label>
-          이메일
-          <input defaultValue="new-user@example.com" type="email" />
-        </label>
-        <label>
-          닉네임
-          <input defaultValue="stockUser" />
-        </label>
-        <label>
-          비밀번호
-          <input defaultValue="password123" type="password" />
-        </label>
-        <label>
-          비밀번호 확인
-          <input defaultValue="password123" type="password" />
-        </label>
-        <button className="primary-button" onClick={handleSignup}>
-          회원가입
-        </button>
-        <button className="ghost-button" onClick={() => setPage("login")}>
-          로그인으로 이동
-        </button>
-      </AuthLayout>
-    );
+  if (location.pathname === "/signup") {
+    return <SignupPage onSignup={handleSignup} onGoLogin={() => navigate("/login")} />;
   }
+
+  const page = getPageFromPath(location.pathname);
 
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <button className="brand" onClick={() => setPage("home")}>
+        <button className="brand" onClick={() => navigate("/")}>
           <span className="logo-mark">S</span>
           <strong>StockSim</strong>
         </button>
         <nav>
-          <button className={page === "home" ? "active" : ""} onClick={() => setPage("home")}>
+          <button className={page === "home" ? "active" : ""} onClick={() => navigate("/")}>
             메인
           </button>
-          <button className={page === "portfolio" ? "active" : ""} onClick={() => setPage("portfolio")}>
+          <button className={page === "portfolio" ? "active" : ""} onClick={() => navigate("/portfolio")}>
             포트폴리오
           </button>
-          <button className={page === "trades" ? "active" : ""} onClick={() => setPage("trades")}>
+          <button className={page === "trades" ? "active" : ""} onClick={() => navigate("/trades")}>
             거래 내역
           </button>
-          <button className={page === "ranking" ? "active" : ""} onClick={() => setPage("ranking")}>
+          <button className={page === "ranking" ? "active" : ""} onClick={() => navigate("/ranking")}>
             랭킹
           </button>
         </nav>
@@ -377,41 +340,108 @@ function App() {
           </div>
           <div className="top-actions">
             <input placeholder="종목 검색" />
-            <button onClick={() => setPage("login")}>로그아웃</button>
+            <button onClick={() => navigate("/login")}>로그아웃</button>
           </div>
         </header>
 
         {message && <p className="toast">{message}</p>}
 
-        {page === "home" && (
-          <HomePage
-            cash={cash}
-            portfolio={portfolio}
-            stocks={initialStocks}
-            onOpenStock={goToStock}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                cash={cash}
+                portfolio={portfolio}
+                stocks={initialStocks}
+                onOpenStock={goToStock}
+              />
+            }
           />
-        )}
-
-        {page === "stock" && (
-          <StockDetailPage
-            stock={selectedStock}
-            holdingQuantity={selectedHolding?.quantity ?? 0}
-            quantity={quantity}
-            tradeAmount={tradeAmount}
-            onQuantityChange={setQuantity}
-            onBuy={handleBuy}
-            onSell={handleSell}
-            onBack={() => setPage("home")}
+          <Route
+            path="/stocks/:stockId"
+            element={
+              <StockDetailPage
+                stock={selectedStock}
+                holdingQuantity={selectedHolding?.quantity ?? 0}
+                quantity={quantity}
+                tradeAmount={tradeAmount}
+                onQuantityChange={setQuantity}
+                onBuy={handleBuy}
+                onSell={handleSell}
+                onBack={() => navigate("/")}
+              />
+            }
           />
-        )}
-
-        {page === "portfolio" && <PortfolioPage portfolio={portfolio} onOpenStock={goToStock} />}
-
-        {page === "trades" && <TradesPage trades={trades} />}
-
-        {page === "ranking" && <RankingPage rankings={rankings} currentNickname="stockUser" />}
+          <Route path="/portfolio" element={<PortfolioPage portfolio={portfolio} onOpenStock={goToStock} />} />
+          <Route path="/trades" element={<TradesPage trades={trades} />} />
+          <Route path="/ranking" element={<RankingPage rankings={rankings} currentNickname="stockUser" />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </section>
     </main>
+  );
+}
+
+function LoginPage({
+  onLogin,
+  onGoSignup
+}: {
+  onLogin: () => void;
+  onGoSignup: () => void;
+}) {
+  return (
+    <AuthLayout title="로그인" description="더미 계정으로 MVP 화면을 확인하세요.">
+      <label>
+        이메일
+        <input defaultValue="user@example.com" type="email" />
+      </label>
+      <label>
+        비밀번호
+        <input defaultValue="password123" type="password" />
+      </label>
+      <button className="primary-button" onClick={onLogin}>
+        로그인
+      </button>
+      <button className="ghost-button" onClick={onGoSignup}>
+        회원가입으로 이동
+      </button>
+    </AuthLayout>
+  );
+}
+
+function SignupPage({
+  onSignup,
+  onGoLogin
+}: {
+  onSignup: () => void;
+  onGoLogin: () => void;
+}) {
+  return (
+    <AuthLayout title="회원가입" description="가입 즉시 가상 현금 10,000,000원이 지급됩니다.">
+      <label>
+        이메일
+        <input defaultValue="new-user@example.com" type="email" />
+      </label>
+      <label>
+        닉네임
+        <input defaultValue="stockUser" />
+      </label>
+      <label>
+        비밀번호
+        <input defaultValue="password123" type="password" />
+      </label>
+      <label>
+        비밀번호 확인
+        <input defaultValue="password123" type="password" />
+      </label>
+      <button className="primary-button" onClick={onSignup}>
+        회원가입
+      </button>
+      <button className="ghost-button" onClick={onGoLogin}>
+        로그인으로 이동
+      </button>
+    </AuthLayout>
   );
 }
 
@@ -784,8 +814,6 @@ function SummaryGrid({
 
 function getPageTitle(page: Page) {
   const titles: Record<Page, string> = {
-    login: "로그인",
-    signup: "회원가입",
     home: "메인",
     stock: "주식 상세",
     portfolio: "포트폴리오",
@@ -794,6 +822,14 @@ function getPageTitle(page: Page) {
   };
 
   return titles[page];
+}
+
+function getPageFromPath(pathname: string): Page {
+  if (pathname.startsWith("/stocks/")) return "stock";
+  if (pathname === "/portfolio") return "portfolio";
+  if (pathname === "/trades") return "trades";
+  if (pathname === "/ranking") return "ranking";
+  return "home";
 }
 
 function usePortfolioShape() {
