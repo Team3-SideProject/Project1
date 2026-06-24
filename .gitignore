@@ -1,9 +1,25 @@
+# Frontend
 node_modules/
 dist/
 *.tsbuildinfo
-.DS_Store
+
+# Backend
+build/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Environment
 application.yml
 application.yaml
-.idea
-build
-.gradle/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
