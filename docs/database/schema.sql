@@ -5,7 +5,7 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,
   cash DECIMAL(15, 2) NOT NULL DEFAULT 10000000,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE stocks (
@@ -15,36 +15,46 @@ CREATE TABLE stocks (
   description TEXT,
   current_price DECIMAL(15, 2) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE stock_price_histories (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  stock_id BIGINT NOT NULL REFERENCES stocks(id),
+  stock_id BIGINT NOT NULL,
   price DECIMAL(15, 2) NOT NULL CHECK (price > 0),
-  recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_stock_price_histories_stock
+    FOREIGN KEY (stock_id) REFERENCES stocks(id)
 );
 
 CREATE TABLE portfolios (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL REFERENCES users(id),
-  stock_id BIGINT NOT NULL REFERENCES stocks(id),
+  user_id BIGINT NOT NULL,
+  stock_id BIGINT NOT NULL,
   quantity INTEGER NOT NULL CHECK (quantity >= 0),
   average_buy_price DECIMAL(15, 2) NOT NULL CHECK (average_buy_price >= 0),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (user_id, stock_id)
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE (user_id, stock_id),
+  CONSTRAINT fk_portfolios_user
+    FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_portfolios_stock
+    FOREIGN KEY (stock_id) REFERENCES stocks(id)
 );
 
 CREATE TABLE trades (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL REFERENCES users(id),
-  stock_id BIGINT NOT NULL REFERENCES stocks(id),
+  user_id BIGINT NOT NULL,
+  stock_id BIGINT NOT NULL,
   trade_type VARCHAR(10) NOT NULL CHECK (trade_type IN ('BUY', 'SELL')),
   quantity INTEGER NOT NULL CHECK (quantity > 0),
   price DECIMAL(15, 2) NOT NULL CHECK (price > 0),
   total_amount DECIMAL(15, 2) NOT NULL CHECK (total_amount > 0),
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_trades_user
+    FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_trades_stock
+    FOREIGN KEY (stock_id) REFERENCES stocks(id)
 );
 
 CREATE INDEX idx_stock_price_histories_stock_id_recorded_at
