@@ -6,3 +6,4 @@ application.yml
 application.yaml
 .idea
 build
+.gradle/
