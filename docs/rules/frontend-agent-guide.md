@@ -8,9 +8,9 @@
 
 ## 기준
 
-- 화면 경로는 `docs/requirements/page-spec.md`를 따릅니다.
-- API 요청/응답 타입은 `docs/api/api-spec.md`를 기준으로 합니다.
-- 공통 색상은 `docs/design/color-guide.md`를 따릅니다.
+- 화면 경로는 `docs/wbs/page-spec.md`를 따릅니다.
+- API 요청/응답 타입은 `docs/architecture/api-spec.md`를 기준으로 합니다.
+- 공통 색상은 `docs/architecture/color-guide.md`를 따릅니다.
 
 ## 주의
 

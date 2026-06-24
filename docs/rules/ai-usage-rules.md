@@ -25,6 +25,6 @@
 
 ## 문서 작업
 
-- 페이지 변경은 `docs/requirements/page-spec.md`에 반영합니다.
-- API 변경은 `docs/api/api-spec.md`와 `endpoint-list.md`에 반영합니다.
-- DB 변경은 `docs/database/table-spec.md`와 `schema.sql`에 반영합니다.
+- 페이지 변경은 `docs/wbs/page-spec.md`에 반영합니다.
+- API 변경은 `docs/architecture/api-spec.md`와 `docs/architecture/endpoint-list.md`에 반영합니다.
+- DB 변경은 `docs/architecture/database-schema.md`와 `docs/architecture/schema.sql`에 반영합니다.

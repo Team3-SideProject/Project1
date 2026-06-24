@@ -8,9 +8,9 @@
 
 ## 기준
 
-- API는 `docs/api/api-spec.md`를 기준으로 합니다.
-- DB 구조는 `docs/database/table-spec.md`와 `schema.sql`을 기준으로 합니다.
-- 주요 예외 코드는 `docs/requirements/page-spec.md`의 협업 기준을 참고합니다.
+- API는 `docs/architecture/api-spec.md`를 기준으로 합니다.
+- DB 구조는 `docs/architecture/database-schema.md`와 `docs/architecture/schema.sql`을 기준으로 합니다.
+- 주요 예외 코드는 `docs/wbs/page-spec.md`의 협업 기준을 참고합니다.
 
 ## 주의
 
