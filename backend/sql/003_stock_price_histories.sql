@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS stocks (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  current_price DECIMAL(15, 2) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS stock_price_histories (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  stock_id BIGINT NOT NULL,
+  price DECIMAL(15, 2) NOT NULL CHECK (price > 0),
+  recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_stock_price_histories_stock
+    FOREIGN KEY (stock_id) REFERENCES stocks(id),
+  INDEX idx_stock_price_histories_stock_id_recorded_at (stock_id, recorded_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
