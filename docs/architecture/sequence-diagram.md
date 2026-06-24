@@ -7,7 +7,7 @@ sequenceDiagram
   actor User
   participant FE as Frontend
   participant BE as Backend
-  participant DB as PostgreSQL
+  participant DB as MySQL
 
   User->>FE: 매수 수량 입력
   FE->>BE: POST /api/trades/buy
@@ -28,7 +28,7 @@ sequenceDiagram
   actor User
   participant FE as Frontend
   participant BE as Backend
-  participant DB as PostgreSQL
+  participant DB as MySQL
 
   User->>FE: 매도 수량 입력
   FE->>BE: POST /api/trades/sell

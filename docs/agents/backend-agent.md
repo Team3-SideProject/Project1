@@ -2,8 +2,8 @@
 
 ## 역할
 
-- Spring Boot API 구현
-- PostgreSQL 스키마와 JPA 엔티티 구성
+- Java 21 + Spring Boot API 구현
+- MySQL 스키마와 JPA 엔티티 구성
 - 거래 검증과 자산 계산 로직 구현
 
 ## 기준

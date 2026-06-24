@@ -7,11 +7,11 @@ React + TypeScript + Vite
         |
         | REST API / JWT
         v
-Spring Boot
+Java 21 + Spring Boot
         |
         | JPA
         v
-PostgreSQL
+MySQL
 ```
 
 ## 책임 분리

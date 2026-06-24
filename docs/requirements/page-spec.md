@@ -21,8 +21,8 @@ StockSim
 | 영역 | 기술 |
 | --- | --- |
 | Frontend | React, TypeScript, Vite |
-| Backend | Spring Boot |
-| Database | PostgreSQL |
+| Backend | Java 21, Spring Boot |
+| Database | MySQL |
 | API | REST API |
 | Auth | JWT |
 
@@ -42,7 +42,7 @@ StockSim
 
 - 실제 주식 API 연동
 - 실시간 주가 반영
-- WebSocket 채팅
+- 채팅 기능
 - 지정가 주문
 - 소셜 로그인
 - 이메일 인증
