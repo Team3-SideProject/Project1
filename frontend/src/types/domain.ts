@@ -30,3 +30,33 @@ export type RankingUser = {
   cash: number;
   stockValue: number;
 };
+
+export type PortfolioRow = Holding & {
+  stock: Stock;
+  valuation: number;
+  profitLoss: number;
+};
+
+export type PortfolioSummary = {
+  rows: PortfolioRow[];
+  cash: number;
+  stockValue: number;
+  totalAsset: number;
+  profitLoss: number;
+};
+
+export type RankingRow = RankingUser & {
+  totalAsset: number;
+  rank: number;
+};
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type SignupRequest = {
+  email: string;
+  nickname: string;
+  password: string;
+};
