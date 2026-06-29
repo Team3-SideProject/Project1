@@ -25,4 +25,8 @@ public class TradeController {
     public TradeResponse buy(@RequestBody TradeRequest request){ // JSON 의 BODY 를 Request로 변환 , buy 실행
         return tradeService.buy(request); //tradeResponse 로 반환 프론트로 추출
     }
+    @PostMapping("/sell")
+    public TradeResponse sell(@RequestBody TradeRequest request){
+        return tradeService.sell(request);
+    }
 }

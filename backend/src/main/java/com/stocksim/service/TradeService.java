@@ -32,7 +32,7 @@ public class TradeService {
                 .map(TradeResponse::from) // DTO 변환
                 .toList(); // 리스트로 변환
     }
-    //구매 로직
+    // 구매 로직
     public TradeResponse buy(TradeRequest request){
         Long userId = 1L;
         Stock stock = stockRepository.findById(request.stockId())
@@ -52,5 +52,26 @@ public class TradeService {
         Trade savedTrade = tradeRepository.save(trade); // DB 저장
         return TradeResponse.from(savedTrade); //DTO 반환
     }
+    // 판매 로직
+    public TradeResponse sell(TradeRequest request){
+        Long userId = 1L;
 
+        Stock stock = stockRepository.findById(request.stockId())
+                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 주식입니다"));
+
+        BigDecimal price = stock.getCurrentPrice();
+        BigDecimal quantity = BigDecimal.valueOf(request.quantity());
+        BigDecimal totalAmount = price.multiply(quantity);
+
+        Trade trade = new Trade(
+                userId,
+                stock.getId(),
+                "SELL",
+                request.quantity(),
+                price,
+                totalAmount
+        );
+        Trade savedTrade = tradeRepository.save(trade);
+        return TradeResponse.from(savedTrade);
+    }
 }
