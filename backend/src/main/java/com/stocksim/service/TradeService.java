@@ -37,6 +37,9 @@ public class TradeService {
         Long userId = 1L;
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주식입니다")); // 요청받은 stock id 로 주식 조회
+        if(request.quantity() == null || request.quantity() <= 0){ // 거래 수량 미달시 에러
+            throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
+        }
         BigDecimal price = stock.getCurrentPrice(); // 주식 가격 가져오기
         BigDecimal quantity = BigDecimal.valueOf(request.quantity()); // 구매 수량 가져오기
         BigDecimal totalAmount = price.multiply(quantity); // 총 거래 금액 계산
@@ -58,7 +61,9 @@ public class TradeService {
 
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 주식입니다"));
-
+        if(request.quantity() == null || request.quantity() <= 0){
+            throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
+        }
         BigDecimal price = stock.getCurrentPrice();
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
         BigDecimal totalAmount = price.multiply(quantity);
