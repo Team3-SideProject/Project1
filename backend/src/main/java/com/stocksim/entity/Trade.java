@@ -34,7 +34,7 @@ public class Trade {
     @Column(name = "total_amount")
     private BigDecimal totalAmount; // 총 거래 금액
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt; // 거래 시간
 
     public Trade(

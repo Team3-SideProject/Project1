@@ -1,11 +1,10 @@
 package com.stocksim.controller;
 
+import com.stocksim.dto.TradeRequest;
 import com.stocksim.dto.TradeResponse;
 import com.stocksim.service.TradeService;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,5 +20,9 @@ public class TradeController {
     @GetMapping("/me") // 공통 주소 뒤에 /me가 붙어 GET /api/trades/me가 됩니다.
     public List<TradeResponse> findByTrades(){
         return tradeService.findMyTrades(); // 서비스의 내 거래내역 조회 로직 실행
+    }
+    @PostMapping ("/buy")
+    public TradeResponse buy(@RequestBody TradeRequest request){ // JSON 의 BODY 를 Request로 변환 , buy 실행
+        return tradeService.buy(request); //tradeResponse 로 반환 프론트로 추출
     }
 }
