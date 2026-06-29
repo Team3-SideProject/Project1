@@ -21,7 +21,7 @@ public class Trade {
     @Column(name = "user_id") // DB 컬럼명과 자바 필드를 연결합니다.
     private Long userId; // 컬럼명을 자바의 변수명으로 변경
 
-    @Column(name="stock_id")
+    @Column(name = "stock_id")
     private Long stockId;
 
     @Column(name = "trade_type")
@@ -31,9 +31,25 @@ public class Trade {
 
     private BigDecimal price; // 거래 당시 가격
 
-    @Column(name="total_amount")
+    @Column(name = "total_amount")
     private BigDecimal totalAmount; // 총 거래 금액
 
-    @Column(name="created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt; // 거래 시간
+
+    public Trade(
+            Long userId,
+            Long stockId,
+            String tradeType,
+            Integer quantity,
+            BigDecimal price,
+            BigDecimal totalAmount
+    ) {
+        this.userId = userId;
+        this.stockId = stockId;
+        this.tradeType = tradeType;
+        this.quantity = quantity;
+        this.price = price;
+        this.totalAmount = totalAmount;
+    }
 }

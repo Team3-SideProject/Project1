@@ -10,3 +10,4 @@ public interface TradeRepository extends JpaRepository<Trade,Long> { // JPA 가 
     // Trade 엔티티를 관리하고, 기본키 타입은 Long
     List<Trade> findByUserId(Long userId); // userId 에 해당하는 거래내역을 조회
 }
+
