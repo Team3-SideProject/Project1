@@ -41,15 +41,15 @@ public class TradeService {
         return executeTrade(request,"SELL");
     }
     // 거래 로직 매소드 분리
-    public TradeResponse executeTrade(TradeRequest request, String tradeType){
+    private TradeResponse executeTrade(TradeRequest request, String tradeType){
+        //exception
+        validateQuantity(request.quantity());
+
         Long userId = 1L;
 
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 주식입니다"));
-        //exception -> 이것도 분리 해야함
-        if(request.quantity() == null || request.quantity() <= 0){
-            throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
-        }
+
 
         BigDecimal price = stock.getCurrentPrice();
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
@@ -65,5 +65,11 @@ public class TradeService {
         );
         Trade savedTrade = tradeRepository.save(trade);
         return TradeResponse.from(savedTrade);
+    }
+    private void validateQuantity(Integer quantity){
+        //exception
+        if(quantity == null || quantity <= 0){
+            throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
+        }
     }
 }
