@@ -34,36 +34,23 @@ public class TradeService {
     }
     // 구매 로직
     public TradeResponse buy(TradeRequest request){
-        Long userId = 1L;
-        Stock stock = stockRepository.findById(request.stockId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주식입니다")); // 요청받은 stock id 로 주식 조회
-        if(request.quantity() == null || request.quantity() <= 0){ // 거래 수량 미달시 에러
-            throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
-        }
-        BigDecimal price = stock.getCurrentPrice(); // 주식 가격 가져오기
-        BigDecimal quantity = BigDecimal.valueOf(request.quantity()); // 구매 수량 가져오기
-        BigDecimal totalAmount = price.multiply(quantity); // 총 거래 금액 계산
-
-        Trade trade = new Trade( // 거래 객체 생성
-                userId,
-                stock.getId(),
-                "BUY",
-                request.quantity(),
-                price,
-                totalAmount
-                );
-        Trade savedTrade = tradeRepository.save(trade); // DB 저장
-        return TradeResponse.from(savedTrade); //DTO 반환
+        return executeTrade(request,"BUY");
     }
     // 판매 로직
     public TradeResponse sell(TradeRequest request){
+        return executeTrade(request,"SELL");
+    }
+    // 거래 로직 매소드 분리
+    public TradeResponse executeTrade(TradeRequest request, String tradeType){
         Long userId = 1L;
 
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 주식입니다"));
+        //exception -> 이것도 분리 해야함
         if(request.quantity() == null || request.quantity() <= 0){
             throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
         }
+
         BigDecimal price = stock.getCurrentPrice();
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
         BigDecimal totalAmount = price.multiply(quantity);
@@ -71,7 +58,7 @@ public class TradeService {
         Trade trade = new Trade(
                 userId,
                 stock.getId(),
-                "SELL",
+                tradeType,
                 request.quantity(),
                 price,
                 totalAmount
