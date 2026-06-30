@@ -32,18 +32,20 @@ public class TradeService {
                 .map(TradeResponse::from) // DTO 변환
                 .toList(); // 리스트로 변환
     }
-    // 구매 로직
+    // 구매
     public TradeResponse buy(TradeRequest request){
         return executeTrade(request,"BUY");
     }
-    // 판매 로직
+
+    // 판매
     public TradeResponse sell(TradeRequest request){
         return executeTrade(request,"SELL");
     }
-    // 거래 로직 매소드 분리
+
+    // 거래 로직 매소드
     private TradeResponse executeTrade(TradeRequest request, String tradeType){
-        //exception
-        validateQuantity(request.quantity());
+
+        validateQuantity(request.quantity()); //exception
 
         Long userId = 1L;
 
@@ -66,8 +68,9 @@ public class TradeService {
         Trade savedTrade = tradeRepository.save(trade);
         return TradeResponse.from(savedTrade);
     }
+
+    //exception
     private void validateQuantity(Integer quantity){
-        //exception
         if(quantity == null || quantity <= 0){
             throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
         }
