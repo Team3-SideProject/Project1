@@ -8,3 +8,4 @@ Spring Boot 백엔드 프로젝트가 들어갈 폴더입니다.
 - API 명세: `../docs/architecture/api-spec.md`
 - DB 명세: `../docs/architecture/database-schema.md`
 - 스키마 초안: `../docs/architecture/schema.sql`
+- Swagger: `http://localhost:8080/swagger-ui/index.html`
