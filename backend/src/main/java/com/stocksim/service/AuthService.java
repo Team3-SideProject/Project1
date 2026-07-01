@@ -14,7 +14,7 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider; // 토큰 제공자 추가
+	private final JwtTokenProvider jwtTokenProvider;
 
 	public AuthService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
 		this.userRepository = userRepository;
@@ -24,27 +24,30 @@ public class AuthService {
 
 	@Transactional
 	public void signUp(SignUpRequest request) {
-		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+		// record 문법 적용: request.email()
+		if (userRepository.findByEmail(request.email()).isPresent()) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
-		String encodedPassword = passwordEncoder.encode(request.getPassword());
-		User user = new User(request.getEmail(), encodedPassword, request.getName(), request.getNickname());
+
+		// record 문법 적용: request.password()
+		String encodedPassword = passwordEncoder.encode(request.password());
+
+		// record 문법 적용: request.name(), request.nickname()
+		User user = new User(request.email(), encodedPassword, request.name(), request.nickname());
 		userRepository.save(user);
 	}
 
-	// 🌟 로그인 로직 추가
 	@Transactional(readOnly = true)
 	public String login(LoginRequest request) {
-		// 1. 이메일로 유저 찾기
-		User user = userRepository.findByEmail(request.getEmail())
+		// record 문법 적용: request.email()
+		User user = userRepository.findByEmail(request.email())
 				.orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
 
-		// 2. 비밀번호가 일치하는지 비교 (BCrypt 매칭 함수 사용!)
-		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+		// record 문법 적용: request.password()
+		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다.");
 		}
 
-		// 3. 일치하면 JWT 토큰을 발행해서 반환
 		return jwtTokenProvider.createToken(user.getEmail());
 	}
 }
