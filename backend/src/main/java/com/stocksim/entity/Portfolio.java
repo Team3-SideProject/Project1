@@ -17,8 +17,10 @@ public class Portfolio { // TODO : JPA 공부해서 채워 넣기
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "user_id")
     private long userId;
 
+    @Column(name = "stock_id")
     private long stockId;
 
     private int quantity;

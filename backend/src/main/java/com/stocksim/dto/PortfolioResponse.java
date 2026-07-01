@@ -1,5 +1,8 @@
 package com.stocksim.dto;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 public record PortfolioResponse(
         // 아이디
         // 닉네임
@@ -10,6 +13,13 @@ public record PortfolioResponse(
         //                          ├── PortfolioStockDto (삼성)
         //                          ├── PortfolioStockDto (LG)
         //                          └── PortfolioStockDto (카카오)
-) { // TODO : JPA 공부해서 채워 넣기
+
+        Long id,
+        String nickname,
+        BigDecimal totalAsset,
+        BigDecimal totalPurchase,
+        BigDecimal totalProfit,
+        List<PortfolioStockResponse> stocks
+) {
 
 }
