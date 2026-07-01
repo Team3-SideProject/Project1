@@ -24,26 +24,22 @@ public class AuthService {
 
 	@Transactional
 	public void signUp(SignUpRequest request) {
-		// record 문법 적용: request.email()
 		if (userRepository.findByEmail(request.email()).isPresent()) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
 
-		// record 문법 적용: request.password()
 		String encodedPassword = passwordEncoder.encode(request.password());
 
-		// record 문법 적용: request.name(), request.nickname()
-		User user = new User(request.email(), encodedPassword, request.name(), request.nickname());
+		// 🌟 다시 request.nickname()을 사용하도록 원상복구
+		User user = new User(request.email(), encodedPassword, request.nickname());
 		userRepository.save(user);
 	}
 
 	@Transactional(readOnly = true)
 	public String login(LoginRequest request) {
-		// record 문법 적용: request.email()
 		User user = userRepository.findByEmail(request.email())
 				.orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
 
-		// record 문법 적용: request.password()
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다.");
 		}
