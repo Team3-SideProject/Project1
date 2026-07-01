@@ -40,6 +40,7 @@ public class AuthController {
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 		try {
 			String token = authService.login(request);
+			// 🌟 프론트엔드의 요청대로 키 이름이 token으로 반환되도록 Response 객체 생성
 			return ResponseEntity.ok(new LoginResponse(token));
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
