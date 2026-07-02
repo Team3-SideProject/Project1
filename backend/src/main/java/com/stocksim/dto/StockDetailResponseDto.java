@@ -1,6 +1,6 @@
-package com.stocksim.stock.dto;
+package com.stocksim.dto;
 
-import com.stocksim.stock.Stock;
+import com.stocksim.entity.Stock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

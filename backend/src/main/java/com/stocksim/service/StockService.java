@@ -1,8 +1,10 @@
 package com.stocksim.stock;
 
-import com.stocksim.stock.dto.StockDetailResponseDto;
-import com.stocksim.stock.dto.StockPriceResponseDto;
-import com.stocksim.stock.dto.StockResponseDto;
+import com.stocksim.entity.Stock;
+import com.stocksim.dto.StockDetailResponseDto;
+import com.stocksim.dto.StockPriceResponseDto;
+import com.stocksim.dto.StockResponseDto;
+import com.stocksim.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

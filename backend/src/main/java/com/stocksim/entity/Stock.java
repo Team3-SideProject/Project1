@@ -1,4 +1,4 @@
-package com.stocksim.stock;
+package com.stocksim.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
