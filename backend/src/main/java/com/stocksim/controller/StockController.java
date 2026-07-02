@@ -1,8 +1,8 @@
 package com.stocksim.stock;
 
-import com.stocksim.stock.dto.StockDetailResponseDto;
-import com.stocksim.stock.dto.StockPriceResponseDto;
-import com.stocksim.stock.dto.StockResponseDto;
+import com.stocksim.dto.StockDetailResponseDto;
+import com.stocksim.dto.StockPriceResponseDto;
+import com.stocksim.dto.StockResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
