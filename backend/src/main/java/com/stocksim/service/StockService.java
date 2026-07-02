@@ -1,8 +1,10 @@
-package com.stocksim.stock;
+package com.stocksim.service; // 패키지 선언 수정
 
-import com.stocksim.stock.dto.StockDetailResponseDto;
-import com.stocksim.stock.dto.StockPriceResponseDto;
-import com.stocksim.stock.dto.StockResponseDto;
+import com.stocksim.entity.Stock; // Stock 엔티티 import 경로 수정
+import com.stocksim.repository.StockRepository; // StockRepository import 경로 수정
+import com.stocksim.dto.StockDetailResponseDto;
+import com.stocksim.dto.StockPriceResponseDto;
+import com.stocksim.dto.StockResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
