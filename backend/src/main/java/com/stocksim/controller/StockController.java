@@ -1,4 +1,4 @@
-package com.stocksim.stock;
+package com.stocksim.controller;
 
 import com.stocksim.dto.StockDetailResponseDto;
 import com.stocksim.dto.StockPriceResponseDto;
