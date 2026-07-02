@@ -47,4 +47,5 @@ public class User {
 	public void updateCash(BigDecimal cash) {
 		this.cash = cash;
 	}
+
 }
