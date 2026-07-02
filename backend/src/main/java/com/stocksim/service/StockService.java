@@ -1,4 +1,4 @@
-package com.stocksim.stock;
+package com.stocksim.service;
 
 import com.stocksim.entity.Stock;
 import com.stocksim.dto.StockDetailResponseDto;
