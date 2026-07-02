@@ -1,25 +1,45 @@
-package com.stocksim.controller;
+package com.stocksim.stock;
 
-import com.stocksim.dto.StockResponse;
-import com.stocksim.service.StockService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.stocksim.stock.dto.StockDetailResponseDto;
+import com.stocksim.stock.dto.StockPriceResponseDto;
+import com.stocksim.stock.dto.StockResponseDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("/api/stocks") // 해당 주소로 들어오는 요청을 처리하는 클래스 입니다.
+@RequestMapping("/api/stocks")
+@RequiredArgsConstructor
 public class StockController {
 
-    private final StockService stockService; // Controller가 비즈니스 로직을 수행하기 위해 Service를 주입받습니다.
-
-    public StockController(StockService stockService) {
-        this.stockService = stockService;
-    } // 생성자를 통해 Service 객체를 주입받습니다.
+    private final StockService stockService;
 
     @GetMapping
-    public List<StockResponse> findAll() {
-        return stockService.findAll();
-    }// Service에게 전체 주식 조회를 요청하고 결과를 JSON으로 반환합니다.
+    public ResponseEntity<List<StockResponseDto>> getAllStocks() {
+        List<StockResponseDto> stocks = stockService.getAllStocks();
+        return ResponseEntity.ok(stocks);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StockDetailResponseDto> getStockDetail(@PathVariable Long id) {
+        try {
+            StockDetailResponseDto stockDetail = stockService.getStockDetail(id);
+            return ResponseEntity.ok(stockDetail);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}/prices")
+    public ResponseEntity<StockPriceResponseDto> getStockPrice(@PathVariable Long id) {
+        try {
+            StockPriceResponseDto stockPrice = stockService.getStockPrice(id);
+            return ResponseEntity.ok(stockPrice);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
