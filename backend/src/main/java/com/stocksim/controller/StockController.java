@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class StockController {
 
-    private final StockService stockService;
+    private final com.stocksim.service.StockService stockService;
 
     @GetMapping
     public ResponseEntity<List<StockResponseDto>> getAllStocks() {
