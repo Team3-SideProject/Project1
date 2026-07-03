@@ -48,4 +48,14 @@ public class User {
 		this.cash = cash;
 	}
 
+	//매수/매도 진행시 유저 현금 확인 후 변화
+	public void decreaseCash(BigDecimal amount) {
+		if(cash.compareTo(amount) < 0){
+			throw new IllegalArgumentException("보유 현금이 부족합니다.");
+		}
+		updateCash(this.cash.subtract(amount));
+	}
+	public void increaseCash(BigDecimal amount) {
+		updateCash(this.cash.add(amount));
+	}
 }
