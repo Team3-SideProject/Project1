@@ -29,10 +29,10 @@ public class Portfolio { // TODO : JPA 공부해서 채워 넣기
     @Column(name = "average_buy_price")
     private BigDecimal averageBuyPrice;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     //생성자
