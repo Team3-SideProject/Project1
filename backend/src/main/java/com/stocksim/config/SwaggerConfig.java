@@ -13,17 +13,16 @@ public class SwaggerConfig {
 	@Bean
 	public OpenAPI openAPI() {
 		String securityJwtName = "JWT_AUTH";
-		SecurityRequirement securityRequirement = new SecurityRequirement().addList(securityJwtName);
 
-		// 🌟 핵심 변경: 스웨거가 자동으로 Bearer를 붙이지 않고, 사용자가 입력한 그대로 'Header'에 꽂아주도록 설정
+		// ❌ 기존에 있던 .addSecurityItem(securityRequirement)을 제거합니다!
+		// 전역 설정을 빼버리면 기본적으로 모든 API의 자물쇠가 사라집니다.
+
 		Components components = new Components().addSecuritySchemes(securityJwtName,
 				new SecurityScheme()
-						.name("Authorization")             // 🌟 컨트롤러가 기다리는 헤더 이름 딱 지정
-						.type(SecurityScheme.Type.APIKEY)  // 🌟 APIKEY 방식으로 변경
-						.in(SecurityScheme.In.HEADER));    // 헤더에 담아 전송
+						.name("Authorization")
+						.type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER));
 
-		return new OpenAPI()
-				.addSecurityItem(securityRequirement)
-				.components(components);
+		return new OpenAPI().components(components);
 	}
 }
