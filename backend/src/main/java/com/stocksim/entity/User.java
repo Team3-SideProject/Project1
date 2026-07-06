@@ -40,7 +40,7 @@ public class User {
 		this.email = email;
 		this.password = encodedPassword;
 		this.nickname = nickname;
-		this.cash = BigDecimal.ZERO; // 회원가입 시 보유 현금 초기값 0원 설정
+		this.cash = new BigDecimal("1000000"); // 초기 보유 현금 100만 설정
 	}
 
 	// 자산 변동(주식 매수/매도)을 위한 자산 업데이트 메서드 (필요시 사용)
