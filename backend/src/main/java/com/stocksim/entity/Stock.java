@@ -1,4 +1,4 @@
-package com.stocksim.entity;
+package com.stocksim.entity; // 패키지 선언 수정
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -43,4 +43,3 @@ public class Stock {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
-
