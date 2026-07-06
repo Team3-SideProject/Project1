@@ -44,8 +44,10 @@ public class User {
 	}
 
 	// 자산 변동(주식 매수/매도)을 위한 자산 업데이트 메서드 (필요시 사용)
-	public void updateCash(BigDecimal cash) {
-		this.cash = cash;
+	public void updateCash(BigDecimal amount) {
+		// 현재 잔액 = 현재 잔액 + (변화량)
+		// 변화량이 음수(-500,000)면 알아서 빼지고, 양수(+600,000)면 알아서 더해집니다!
+		this.cash = this.cash.add(amount);
 	}
 
 }
