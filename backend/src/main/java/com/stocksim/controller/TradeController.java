@@ -18,15 +18,23 @@ public class TradeController {
         this.tradeService = tradeService;
     }
     @GetMapping("/me") // 공통 주소 뒤에 /me가 붙어 GET /api/trades/me가 됩니다.
-    public List<TradeResponse> findByTrades(){
-        return tradeService.findMyTrades(); // 서비스의 내 거래내역 조회 로직 실행
+    public List<TradeResponse> findByTrades(
+            @RequestHeader ("Authorization") String authorization
+    ){
+        return tradeService.findMyTrades(authorization); // 서비스의 내 거래내역 조회 로직 실행
     }
     @PostMapping ("/buy")
-    public TradeResponse buy(@RequestBody TradeRequest request){ // JSON 의 BODY 를 Request로 변환 , buy 실행
-        return tradeService.buy(request); //tradeResponse 로 반환 프론트로 추출
+    public TradeResponse buy(
+            @RequestBody TradeRequest request,
+            @RequestHeader ("Authorization")  String authorization // 토큰 받기
+            ){ // JSON 의 BODY 를 Request로 변환 , buy 실행
+        return tradeService.buy(request, authorization); //tradeResponse 로 반환 프론트로 추출
     }
     @PostMapping("/sell")
-    public TradeResponse sell(@RequestBody TradeRequest request){
-        return tradeService.sell(request);
+    public TradeResponse sell(
+            @RequestBody TradeRequest request,
+            @RequestHeader ("Authorization")   String authorization
+            ){
+        return tradeService.sell(request, authorization);
     }
 }

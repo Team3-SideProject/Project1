@@ -1,5 +1,6 @@
 package com.stocksim.service;
 
+import com.stocksim.config.JwtTokenProvider;
 import com.stocksim.dto.TradeRequest;
 import com.stocksim.dto.TradeResponse;
 import com.stocksim.entity.Portfolio;
@@ -26,48 +27,50 @@ public class TradeService {
     //포폴 가져오기
     private final PortfolioRepository portfolioRepository;
 
+    private final JwtTokenProvider jwtTokenProvider; // jwt 연결
+
     public TradeService(
             TradeRepository tradeRepository,
             StockRepository stockRepository,
             UserRepository userRepository,
-            PortfolioRepository portfolioRepository
-    ) {
+            PortfolioRepository portfolioRepository,
+            JwtTokenProvider jwtTokenProvider
+            ) {
         this.tradeRepository = tradeRepository;
         this.stockRepository = stockRepository;
         this.userRepository = userRepository;
         this.portfolioRepository = portfolioRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
-    //현재 로그인한 사용자 거래내역 조회
-    public List<TradeResponse> findMyTrades(){
-        Long userId = 1L; // 유저 아이디가 없으므로 1로 고정
 
-        return tradeRepository.findByUserId(userId)
+    //현재 로그인한 사용자 거래내역 조회
+    public List<TradeResponse> findMyTrades(String authorization) {
+        User user = getLoggedUser(authorization);
+        return tradeRepository.findByUserId(user.getId())
                 .stream() // 내부의 값을 하나씩 꺼낸다
                 .map(TradeResponse::from) // DTO 변환
                 .toList(); // 리스트로 변환
     }
     // 구매
-    public TradeResponse buy(TradeRequest request){
-        return executeTrade(request,"BUY");
+    public TradeResponse buy(TradeRequest request, String authorization) {
+        return executeTrade(request,"BUY", authorization);
     }
 
     // 판매
-    public TradeResponse sell(TradeRequest request){
-        return executeTrade(request,"SELL");
+    public TradeResponse sell(TradeRequest request,  String authorization) {
+        return executeTrade(request,"SELL",  authorization);
     }
 
     // 거래 로직 매소드
-    private TradeResponse executeTrade(TradeRequest request, String tradeType){
+    private TradeResponse executeTrade(TradeRequest request, String tradeType, String authorization){
 
         validateQuantity(request.quantity()); //exception 거래 수량 체크
 
-        Long userId = 1L;
+        User user = getLoggedUser(authorization);
+        Long userId = user.getId();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 주식입니다"));
-
 
         BigDecimal price = stock.getCurrentPrice();
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
@@ -111,5 +114,18 @@ public class TradeService {
         if(quantity == null || quantity <= 0){
             throw new IllegalArgumentException("거래 수량은 1 이상이어야 합니다");
         }
+    }
+
+    private User getLoggedUser(String authorization){
+        if(authorization == null || !authorization.startsWith("Bearer ")){
+            throw new IllegalArgumentException("Authorization 헤더 형식이 올바르지 않습니다");
+        }
+        String token = authorization.substring(7);
+        if(!jwtTokenProvider.validateToken(token)){
+            throw new IllegalArgumentException("유효하지 않은 토큰 입니다");
+        }
+        String email = jwtTokenProvider.getEmail(token);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다"));
     }
 }
