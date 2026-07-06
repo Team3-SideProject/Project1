@@ -1,30 +1,47 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { SignupRequest } from "../types/domain";
 
 type SignupPageProps = {
-  onSignup: () => void;
+  onSignup: (request: SignupRequest) => void;
   onGoLogin: () => void;
 };
 
 export function SignupPage({ onSignup, onGoLogin }: SignupPageProps) {
+  const [email, setEmail] = useState("new-user@example.com");
+  const [nickname, setNickname] = useState("stockUser");
+  const [password, setPassword] = useState("password123");
+  const [passwordConfirm, setPasswordConfirm] = useState("password123");
+
   return (
     <AuthLayout title="회원가입" description="가입 즉시 가상 현금 10,000,000원이 지급됩니다.">
       <label>
         이메일
-        <input defaultValue="new-user@example.com" type="email" />
+        <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
       </label>
       <label>
         닉네임
-        <input defaultValue="stockUser" />
+        <input value={nickname} onChange={(event) => setNickname(event.target.value)} />
       </label>
       <label>
         비밀번호
-        <input defaultValue="password123" type="password" />
+        <input value={password} type="password" onChange={(event) => setPassword(event.target.value)} />
       </label>
       <label>
         비밀번호 확인
-        <input defaultValue="password123" type="password" />
+        <input
+          value={passwordConfirm}
+          type="password"
+          onChange={(event) => setPasswordConfirm(event.target.value)}
+        />
       </label>
-      <button className="primary-button" onClick={onSignup}>
+      <button
+        className="primary-button"
+        onClick={() => {
+          if (password === passwordConfirm) {
+            onSignup({ email, nickname, password });
+          }
+        }}
+      >
         회원가입
       </button>
       <button className="ghost-button" onClick={onGoLogin}>

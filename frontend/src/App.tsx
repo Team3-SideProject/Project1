@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchPath, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { login, signup } from "./api/authApi";
-import { getHoldings } from "./api/portfolioApi";
+import { login, logout, signup } from "./api/authApi";
+import { getHoldings, getPortfolio } from "./api/portfolioApi";
 import { getRankings } from "./api/rankingApi";
 import { getStocks } from "./api/stockApi";
 import { buyStock, getTrades, sellStock } from "./api/tradeApi";
@@ -13,7 +13,17 @@ import { RankingPage } from "./pages/RankingPage";
 import { SignupPage } from "./pages/SignupPage";
 import { StockDetailPage } from "./pages/StockDetailPage";
 import { TradesPage } from "./pages/TradesPage";
-import type { Holding, Page, PortfolioSummary, RankingUser, Stock, Trade } from "./types/domain";
+import type {
+  Holding,
+  LoginRequest,
+  Page,
+  PortfolioApiResponse,
+  PortfolioSummary,
+  RankingUser,
+  SignupRequest,
+  Stock,
+  Trade
+} from "./types/domain";
 import { formatWon } from "./utils/format";
 
 function App() {
@@ -31,11 +41,29 @@ function App() {
   const [rankingData, setRankingData] = useState<RankingUser[]>(rankingUsers);
   const [message, setMessage] = useState("");
 
+  const refreshDashboard = async () => {
+    const nextStocks = await getStocks();
+    const portfolioResponse = await getPortfolio();
+    const nextHoldings = portfolioResponse
+      ? toHoldings(portfolioResponse, nextStocks)
+      : await getHoldings();
+
+    setStocks(nextStocks);
+    setHoldings(nextHoldings);
+    setTrades(await getTrades());
+    setRankingData(await getRankings());
+
+    if (portfolioResponse) {
+      const stockValue = nextHoldings.reduce((sum, holding) => {
+        const stock = nextStocks.find((item) => item.id === holding.stockId);
+        return sum + (stock?.currentPrice ?? 0) * holding.quantity;
+      }, 0);
+      setCash(Math.max(0, Number(portfolioResponse.totalAsset) - stockValue));
+    }
+  };
+
   useEffect(() => {
-    getStocks().then(setStocks);
-    getHoldings().then(setHoldings);
-    getTrades().then(setTrades);
-    getRankings().then(setRankingData);
+    refreshDashboard();
   }, []);
 
   const selectedStock = stocks.find((stock) => stock.id === selectedStockId) ?? stocks[0] ?? initialStocks[0];
@@ -87,25 +115,30 @@ function App() {
     navigate(`/stocks/${stockId}`);
   };
 
-  const handleLogin = () => {
-    login({ email: "user@example.com", password: "password123" }).then(() => {
+  const handleLogin = (request: LoginRequest) => {
+    login(request).then((success) => {
+      if (!success) {
+        setMessage("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
+        return;
+      }
       setMessage("");
+      refreshDashboard();
       navigate("/");
     });
   };
 
-  const handleSignup = () => {
-    signup({
-      email: "new-user@example.com",
-      nickname: "stockUser",
-      password: "password123"
-    }).then(() => {
+  const handleSignup = (request: SignupRequest) => {
+    signup(request).then((success) => {
+      if (!success) {
+        setMessage("회원가입에 실패했습니다. 입력값을 확인해주세요.");
+        return;
+      }
       setMessage("회원가입이 완료되었습니다. 초기 자산 10,000,000원이 지급되었습니다.");
       navigate("/");
     });
   };
 
-  const handleBuy = () => {
+  const handleBuy = async () => {
     if (quantity < 1) {
       setMessage("거래 수량은 1 이상이어야 합니다.");
       return;
@@ -116,29 +149,37 @@ function App() {
       return;
     }
 
-    buyStock({ stockId: selectedStock.id, quantity });
-    setCash((currentCash) => currentCash - tradeAmount);
-    setHoldings((current) => updateHoldingAfterBuy(current, selectedStock, quantity));
-    setTrades((current) => [
-      createTrade("BUY", current.length + 1, selectedStock, quantity),
-      ...current
-    ]);
+    const trade = await buyStock({ stockId: selectedStock.id, quantity });
+    if (trade) {
+      await refreshDashboard();
+    } else {
+      setCash((currentCash) => currentCash - tradeAmount);
+      setHoldings((current) => updateHoldingAfterBuy(current, selectedStock, quantity));
+      setTrades((current) => [
+        createTrade("BUY", current.length + 1, selectedStock, quantity),
+        ...current
+      ]);
+    }
     setMessage(`${selectedStock.code} ${quantity}주 매수가 완료되었습니다.`);
   };
 
-  const handleSell = () => {
+  const handleSell = async () => {
     if (!selectedHolding || selectedHolding.quantity < quantity) {
       setMessage("보유 주식 수량이 부족합니다.");
       return;
     }
 
-    sellStock({ stockId: selectedStock.id, quantity });
-    setCash((currentCash) => currentCash + tradeAmount);
-    setHoldings((current) => updateHoldingAfterSell(current, selectedStock.id, quantity));
-    setTrades((current) => [
-      createTrade("SELL", current.length + 1, selectedStock, quantity),
-      ...current
-    ]);
+    const trade = await sellStock({ stockId: selectedStock.id, quantity });
+    if (trade) {
+      await refreshDashboard();
+    } else {
+      setCash((currentCash) => currentCash + tradeAmount);
+      setHoldings((current) => updateHoldingAfterSell(current, selectedStock.id, quantity));
+      setTrades((current) => [
+        createTrade("SELL", current.length + 1, selectedStock, quantity),
+        ...current
+      ]);
+    }
     setMessage(`${selectedStock.code} ${quantity}주 매도가 완료되었습니다.`);
   };
 
@@ -191,7 +232,14 @@ function App() {
           </div>
           <div className="top-actions">
             <input placeholder="종목 검색" />
-            <button onClick={() => navigate("/login")}>로그아웃</button>
+            <button
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
+            >
+              로그아웃
+            </button>
           </div>
         </header>
 
@@ -280,6 +328,18 @@ function updateHoldingAfterSell(current: Holding[], stockId: number, quantity: n
         : holding
     )
     .filter((holding) => holding.quantity > 0);
+}
+
+function toHoldings(portfolio: PortfolioApiResponse, stocks: Stock[]): Holding[] {
+  return portfolio.stocks.map((item, index) => {
+    const stock = stocks.find((candidate) => candidate.code === item.code);
+
+    return {
+      stockId: stock?.id ?? index + 1,
+      quantity: Number(item.quantity),
+      averageBuyPrice: Number(item.averageBuyPrice)
+    };
+  });
 }
 
 function getPageTitle(page: Page) {

@@ -1,22 +1,26 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { LoginRequest } from "../types/domain";
 
 type LoginPageProps = {
-  onLogin: () => void;
+  onLogin: (request: LoginRequest) => void;
   onGoSignup: () => void;
 };
 
 export function LoginPage({ onLogin, onGoSignup }: LoginPageProps) {
+  const [email, setEmail] = useState("user@example.com");
+  const [password, setPassword] = useState("password123");
+
   return (
     <AuthLayout title="로그인" description="더미 계정으로 MVP 화면을 확인하세요.">
       <label>
         이메일
-        <input defaultValue="user@example.com" type="email" />
+        <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
       </label>
       <label>
         비밀번호
-        <input defaultValue="password123" type="password" />
+        <input value={password} type="password" onChange={(event) => setPassword(event.target.value)} />
       </label>
-      <button className="primary-button" onClick={onLogin}>
+      <button className="primary-button" onClick={() => onLogin({ email, password })}>
         로그인
       </button>
       <button className="ghost-button" onClick={onGoSignup}>
