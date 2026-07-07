@@ -7,10 +7,8 @@ import com.stocksim.entity.Portfolio;
 import com.stocksim.entity.Stock;
 import com.stocksim.entity.Trade;
 import com.stocksim.entity.User;
-import com.stocksim.repository.PortfolioRepository;
-import com.stocksim.repository.StockRepository;
-import com.stocksim.repository.TradeRepository;
-import com.stocksim.repository.UserRepository;
+import com.stocksim.entity.CashHistory;
+import com.stocksim.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,18 +27,22 @@ public class TradeService {
 
     private final JwtTokenProvider jwtTokenProvider; // jwt 연결
 
+    private final CashHistoryRepository cashHistoryRepository; // cashHistory 연결
+
     public TradeService(
             TradeRepository tradeRepository,
             StockRepository stockRepository,
             UserRepository userRepository,
             PortfolioRepository portfolioRepository,
-            JwtTokenProvider jwtTokenProvider
+            JwtTokenProvider jwtTokenProvider,
+             CashHistoryRepository cashHistoryRepository
             ) {
         this.tradeRepository = tradeRepository;
         this.stockRepository = stockRepository;
         this.userRepository = userRepository;
         this.portfolioRepository = portfolioRepository;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.cashHistoryRepository = cashHistoryRepository;
     }
 
     //현재 로그인한 사용자 거래내역 조회
@@ -90,9 +92,21 @@ public class TradeService {
         if(tradeType.equals("BUY")) {
             user.decreaseCash(totalAmount);
             portfolio.buy(request.quantity(), price);
+            CashHistory cashHistory = new CashHistory(
+                    user,
+                    totalAmount.negate(),
+                    "BUY"
+            );
+            cashHistoryRepository.save(cashHistory);
         }else if(tradeType.equals("SELL")) {
-            user.increaseCash(totalAmount);
             portfolio.sell(request.quantity());
+            user.increaseCash(totalAmount);
+            CashHistory cashHistory = new CashHistory(
+                    user,
+                    totalAmount,
+                    "SELL"
+            );
+            cashHistoryRepository.save(cashHistory);
         }
         //레포지토리 저장
         portfolioRepository.save(portfolio);
