@@ -47,33 +47,28 @@ public class AuthController {
 		}
 	}
 
-	// 🌟 [변경 점 1] LoginResponse 구조 변경에 따른 리팩토링
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 		try {
-			// 원래는 여기서 String token을 받았지만, 이제 서비스가 LoginResponse(가방)를 바로 줍니다.
+			// 서비스단에서 Access와 Refresh 토큰이 한 가방에 깔끔하게 포장되어 나옵니다.
 			LoginResponse response = authService.login(request);
-
-			// 가방을 그대로 손님(스웨거)에게 전달합니다. (안에 짧은 거, 긴 거 다 들어있음)
 			return ResponseEntity.ok(response);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
 
-	// 🌟 [추가 점 2] 로그아웃 API 새로 도입!
 	@Operation(summary = "로그아웃", security = @SecurityRequirement(name = "JWT_AUTH"))
 	@PostMapping("/logout")
 	public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
-		// 1. 토큰이 잘 들어왔나 서빙 상태 확인
 		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 존재하지 않습니다.");
 		}
 
-		String token = bearerToken.substring(7);
+		// 🌟 .trim()을 붙여 스웨거가 자동 가공해준 공백 노이즈를 완벽 차단합니다.
+		String token = bearerToken.substring(7).trim();
 
 		try {
-			// 2. 주방(Service)으로 가서 토큰을 지우는 핵심 로직 수행
 			authService.logout(token);
 			return ResponseEntity.ok("로그아웃이 완료되었습니다.");
 		} catch (IllegalArgumentException e) {
@@ -88,7 +83,8 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 존재하지 않습니다.");
 		}
 
-		String token = bearerToken.substring(7);
+		// 🌟 동일하게 안전 패치 적용
+		String token = bearerToken.substring(7).trim();
 
 		if (!jwtTokenProvider.validateToken(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
@@ -108,7 +104,10 @@ public class AuthController {
 		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 존재하지 않습니다.");
 		}
-		String token = bearerToken.substring(7);
+
+		// 🌟 동일하게 안전 패치 적용
+		String token = bearerToken.substring(7).trim();
+
 		if (!jwtTokenProvider.validateToken(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
 		}
