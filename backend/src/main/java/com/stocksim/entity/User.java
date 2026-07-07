@@ -40,12 +40,14 @@ public class User {
 		this.email = email;
 		this.password = encodedPassword;
 		this.nickname = nickname;
-		this.cash = BigDecimal.ZERO; // 회원가입 시 보유 현금 초기값 0원 설정
+		this.cash = new BigDecimal("1000000"); // 초기 보유 현금 100만 설정
 	}
 
 	// 자산 변동(주식 매수/매도)을 위한 자산 업데이트 메서드 (필요시 사용)
-	public void updateCash(BigDecimal cash) {
-		this.cash = cash;
+	public void updateCash(BigDecimal amount) {
+		// 현재 잔액 = 현재 잔액 + (변화량)
+		// 변화량이 음수(-500,000)면 알아서 빼지고, 양수(+600,000)면 알아서 더해집니다!
+		this.cash = this.cash.add(amount);
 	}
 
 	//매수/매도 진행시 유저 현금 확인 후 변화
