@@ -49,13 +49,6 @@ public class User {
 
 	// ================= 비즈니스 로직 메서드 ================= //
 
-	// 자산 변동(주식 매수/매도)을 위한 자산 업데이트 메서드
-	public void updateCash(BigDecimal amount) {
-		// 현재 잔액 = 현재 잔액 + (변화량)
-		// 변화량이 음수(-500,000)면 알아서 빼지고, 양수(+600,000)면 알아서 더해집니다!
-		this.cash = this.cash.add(amount);
-	}
-
 	// 🌟 추가: 로그인 성공 시 긴 토큰을 업데이트하는 메서드
 	public void updateRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
@@ -64,5 +57,15 @@ public class User {
 	// 🌟 추가: 로그아웃 시 긴 토큰을 비워버리는 메서드
 	public void clearRefreshToken() {
 		this.refreshToken = null;
+	}
+	//매수/매도 진행시 유저 현금 확인 후 변화
+	public void decreaseCash(BigDecimal amount) {
+		if(cash.compareTo(amount) < 0){
+			throw new IllegalArgumentException("보유 현금이 부족합니다.");
+		}
+		this.cash = this.cash.subtract(amount);
+	}
+	public void increaseCash(BigDecimal amount) {
+		this.cash = this.cash.add(amount);
 	}
 }

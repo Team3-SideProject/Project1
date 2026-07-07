@@ -6,7 +6,6 @@ import com.stocksim.dto.LoginResponse;
 import com.stocksim.dto.SignUpRequest;
 import com.stocksim.dto.UserResponse;
 import com.stocksim.dto.CashHistoryResponse;
-import com.stocksim.entity.CashHistory;
 import com.stocksim.entity.User;
 import com.stocksim.repository.CashHistoryRepository;
 import com.stocksim.repository.UserRepository;
