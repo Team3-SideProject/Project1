@@ -27,6 +27,10 @@ public class User {
 
 	private BigDecimal cash;
 
+	// 🌟 추가: 로그인 유지를 위한 긴 토큰 (JWT 문자열이 길기 때문에 길이를 500으로 여유 있게 설정)
+	@Column(name = "refresh_token", length = 500)
+	private String refreshToken;
+
 	// 🌟 Trade 엔티티 스타일과 동일하게 DB 기본 설정을 따르도록 세팅
 	@Column(name = "created_at", insertable = false, updatable = false)
 	private LocalDateTime createdAt; // 생성일
@@ -43,6 +47,17 @@ public class User {
 		this.cash = new BigDecimal("1000000"); // 초기 보유 현금 100만 설정
 	}
 
+	// ================= 비즈니스 로직 메서드 ================= //
+
+	// 🌟 추가: 로그인 성공 시 긴 토큰을 업데이트하는 메서드
+	public void updateRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	// 🌟 추가: 로그아웃 시 긴 토큰을 비워버리는 메서드
+	public void clearRefreshToken() {
+		this.refreshToken = null;
+	}
 	//매수/매도 진행시 유저 현금 확인 후 변화
 	public void decreaseCash(BigDecimal amount) {
 		if(cash.compareTo(amount) < 0){
