@@ -10,6 +10,7 @@ import com.stocksim.entity.User;
 import com.stocksim.entity.CashHistory;
 import com.stocksim.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,11 +55,13 @@ public class TradeService {
                 .toList(); // 리스트로 변환
     }
     // 구매
+    @Transactional //하나의 작업을 수행하기 위해 실행되는 여러 작업을 하나의 단위로 묶어, 모두 성공하거나 모두 실패하도록 보장하는 것
     public TradeResponse buy(TradeRequest request, String authorization) {
         return executeTrade(request,"BUY", authorization);
     }
 
     // 판매
+    @Transactional
     public TradeResponse sell(TradeRequest request,  String authorization) {
         return executeTrade(request,"SELL",  authorization);
     }
@@ -78,18 +81,16 @@ public class TradeService {
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
         BigDecimal totalAmount = price.multiply(quantity);
 
-        //포트폴리오 수량 변동 관련
-        // 포트폴리오 연결(유저와 해당 유저의 주식 수량 가져오기, 해당 유저가 해당 주식이 없을경우 새로 생성)
-        Portfolio portfolio = portfolioRepository
-                .findByUserIdAndStockId(userId,stock.getId())
-                .orElseGet(()->new Portfolio(
-                        userId,
-                        stock.getId(),
-                        0,
-                        BigDecimal.ZERO
-                ));
         //거래 타입에 따라 해당 로직 실행
         if(tradeType.equals("BUY")) {
+            Portfolio portfolio = portfolioRepository
+                    .findByUserIdAndStockId(userId,stock.getId()) //포트폴리오 수량 변동 관련
+                    .orElseGet(()->new Portfolio(      // 포트폴리오 연결(유저와 해당 유저의 주식 수량 가져오기, 해당 유저가 해당 주식이 없을경우 새로 생성)
+                            userId,
+                            stock.getId(),
+                            0,
+                            BigDecimal.ZERO
+                    ));
             user.decreaseCash(totalAmount);
             portfolio.buy(request.quantity(), price);
             CashHistory cashHistory = new CashHistory(
@@ -98,7 +99,11 @@ public class TradeService {
                     "BUY"
             );
             cashHistoryRepository.save(cashHistory);
+            portfolioRepository.save(portfolio);
         }else if(tradeType.equals("SELL")) {
+            Portfolio portfolio = portfolioRepository
+                    .findByUserIdAndStockId(userId,stock.getId())
+                    .orElseThrow(()->new IllegalArgumentException("보유하지 않은 주식입니다"));
             portfolio.sell(request.quantity());
             user.increaseCash(totalAmount);
             CashHistory cashHistory = new CashHistory(
@@ -107,10 +112,9 @@ public class TradeService {
                     "SELL"
             );
             cashHistoryRepository.save(cashHistory);
+            portfolioRepository.save(portfolio);
         }
         //레포지토리 저장
-        portfolioRepository.save(portfolio);
-
         Trade trade = new Trade(
                 userId,
                 stock.getId(),
