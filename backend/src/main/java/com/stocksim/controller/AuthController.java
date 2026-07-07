@@ -8,10 +8,9 @@ import com.stocksim.dto.UserResponse;
 import com.stocksim.dto.CashHistoryResponse;
 import com.stocksim.entity.CashHistory;
 import com.stocksim.entity.User;
-import com.stocksim.repository.CashHistoryRepository; // 🌟 추가
+import com.stocksim.repository.CashHistoryRepository;
 import com.stocksim.repository.UserRepository;
 import com.stocksim.service.AuthService;
-// 🌟 1. 스웨거 어노테이션 사용을 위한 임포트 추가
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
@@ -27,7 +26,7 @@ public class AuthController {
 	private final AuthService authService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRepository userRepository;
-	private final CashHistoryRepository cashHistoryRepository; // 🌟 1. 레포지토리 필드 추가
+	private final CashHistoryRepository cashHistoryRepository;
 
 	public AuthController(AuthService authService, JwtTokenProvider jwtTokenProvider, UserRepository userRepository, CashHistoryRepository cashHistoryRepository) {
 		this.authService = authService;
@@ -44,24 +43,44 @@ public class AuthController {
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		} catch (Exception e) {
-			// 🌟 여기에 걸려서 스웨거 화면에 진짜 에러 원인 글자가 찍힐 것입니다!
 			return ResponseEntity.status(500).body("에러: " + e.getMessage());
 		}
 	}
 
+	// 🌟 [변경 점 1] LoginResponse 구조 변경에 따른 리팩토링
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-		// 🔓 자물쇠 없음: 토큰 없이 누구나 접근 가능
 		try {
-			String token = authService.login(request);
-			return ResponseEntity.ok(new LoginResponse(token));
+			// 원래는 여기서 String token을 받았지만, 이제 서비스가 LoginResponse(가방)를 바로 줍니다.
+			LoginResponse response = authService.login(request);
+
+			// 가방을 그대로 손님(스웨거)에게 전달합니다. (안에 짧은 거, 긴 거 다 들어있음)
+			return ResponseEntity.ok(response);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
 
-	// 🌟 2. 이 메서드에만 콕 집어서 자물쇠를 채우는 핵심 코드 추가!
-	// SwaggerConfig에서 정의한 이름인 "JWT_AUTH"와 매핑됩니다.
+	// 🌟 [추가 점 2] 로그아웃 API 새로 도입!
+	@Operation(summary = "로그아웃", security = @SecurityRequirement(name = "JWT_AUTH"))
+	@PostMapping("/logout")
+	public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
+		// 1. 토큰이 잘 들어왔나 서빙 상태 확인
+		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 존재하지 않습니다.");
+		}
+
+		String token = bearerToken.substring(7);
+
+		try {
+			// 2. 주방(Service)으로 가서 토큰을 지우는 핵심 로직 수행
+			authService.logout(token);
+			return ResponseEntity.ok("로그아웃이 완료되었습니다.");
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
 	@Operation(summary = "내 정보 조회", security = @SecurityRequirement(name = "JWT_AUTH"))
 	@GetMapping("/me")
 	public ResponseEntity<?> getMe(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
@@ -86,7 +105,6 @@ public class AuthController {
 	@Operation(summary = "내 자산 변동 이력 조회", security = @SecurityRequirement(name = "JWT_AUTH"))
 	@GetMapping("/histories")
 	public ResponseEntity<?> getMyHistories(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
-		// 토큰 검증 단계 (기존 getMe 코드와 동일)
 		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 존재하지 않습니다.");
 		}
@@ -95,12 +113,10 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
 		}
 
-		// 유저 찾기
 		String email = jwtTokenProvider.getEmail(token);
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-		// 🌟 핵심: DB에서 이력을 꺼내와 레코드 DTO 리스트로 변환 (아까 배운 컨베이어 벨트 스트림 로직)
 		List<CashHistoryResponse> responses = cashHistoryRepository.findByUserOrderByIdDesc(user)
 				.stream()
 				.map(CashHistoryResponse::new)
