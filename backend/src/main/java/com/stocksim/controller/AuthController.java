@@ -123,4 +123,19 @@ public class AuthController {
 
 		return ResponseEntity.ok(responses);
 	}
+
+	@Operation(summary = "토큰 재발급 (Access Token 갱신)")
+	@PostMapping("/refresh")
+	public ResponseEntity<?> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
+		try {
+			// 주방(Service)으로 가서 새로운 엑세스 토큰을 받아옵니다.
+			String newAccessToken = authService.refreshAccessToken(refreshToken);
+
+			// 스웨거에 "여기 새 사원증 나왔습니다!" 하고 새 토큰만 돌려줍니다.
+			return ResponseEntity.ok(newAccessToken);
+		} catch (IllegalArgumentException e) {
+			// 토큰이 꼬였거나 만료됐으면 401 에러와 함께 로그인 다시 하라고 알림
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+		}
+	}
 }

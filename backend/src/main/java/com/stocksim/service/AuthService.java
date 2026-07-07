@@ -92,4 +92,29 @@ public class AuthService {
 		// 3. DB에 저장되어 있던 긴 토큰(Refresh)을 완전히 비워버림(null)으로써 무효화
 		user.clearRefreshToken();
 	}
+	/**
+	 * 🌟 [추가] 리프레시 토큰을 이용한 엑세스 토큰 재발급 비즈니스 로직
+	 */
+	@Transactional(readOnly = true)
+	public String refreshAccessToken(String refreshToken) {
+		// 1. 리프레시 토큰 자체가 유효한지 검증 (위조/만료 체크)
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			throw new IllegalArgumentException("유효하지 않거나 만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
+		}
+
+		// 2. 토큰에서 주인(이메일) 꺼내기
+		String email = jwtTokenProvider.getEmail(refreshToken);
+
+		// 3. DB에서 유저 조회
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+		// 4. 💥 [핵심 보안] DB에 저장된 토큰과 유저가 들고온 토큰이 일치하는지 대조
+		if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+			throw new IllegalArgumentException("토큰 정보가 일치하지 않거나 이미 로그아웃된 계정입니다.");
+		}
+
+		// 5. 검증 완료! 새 사원증(Access Token)을 끊어줍니다.
+		return jwtTokenProvider.createAccessToken(user.getEmail());
+	}
 }
