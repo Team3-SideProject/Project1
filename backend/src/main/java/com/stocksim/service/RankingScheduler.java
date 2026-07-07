@@ -24,7 +24,11 @@ public class RankingScheduler {
     private final PortfolioRepository portfolioRepository;
     private final RankingRepository rankingRepository;
 
+    // 자정마다 실행
     @Scheduled(cron = "0 0 0 * * ?")
+    // @ManyToOne(fetch = FetchType.LAZY)가 있는 데이터 접근시 필요함
+    // 1. 데이터 일관성 보장 : 메서드 실행 중 어디서든 에러가 나는 순간 전체 로직을 실행 전 상태로 되돌림
+    // 2. 지연 로딩(Lazy Loading) 기능 지원 : 연관된 엔티티를 실제 필요할 때 데이터베이스에서 가져오는 지연 로딩
     @Transactional
     public void calculateTotalAssetRanking() {
         LocalDateTime calculatedAt = LocalDateTime.now();
@@ -96,7 +100,9 @@ public class RankingScheduler {
             );
         }
 
+        // 자정 이전 랭킹 데이터 삭제
         rankingRepository.deleteAllInBatch();
+        // 신규 랭킹 데이터 저장
         rankingRepository.saveAll(finalRankings);
     }
 }
