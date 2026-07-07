@@ -15,23 +15,38 @@ public class Portfolio { // TODO : JPA 공부해서 채워 넣기
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name = "user_id")
-    private long userId;
+    // 다대일(N:1) 유저는 여러개의 포트폴리오를 가짐
+    // LAZY : 필요할 때까지 연관 객체를 가져오지 않음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "stock_id")
-    private long stockId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
 
     private int quantity;
 
     @Column(name = "average_buy_price")
     private BigDecimal averageBuyPrice;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
+    public Portfolio(
+            User user,
+            Stock stock,
+            int quantity,
+            BigDecimal averageBuyPrice
+    ){
+        this.user = user;
+        this.stock = stock;
+        this.quantity = quantity;
+        this.averageBuyPrice = averageBuyPrice;
+    }
 }

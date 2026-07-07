@@ -42,5 +42,11 @@ public class Stock {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public Stock(String code, String name, BigDecimal currentPrice) {
+        this.code = code;
+        this.name = name;
+        this.currentPrice = currentPrice;
+    }
 }
 
