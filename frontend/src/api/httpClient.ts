@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const ACCESS_TOKEN_KEY = "stocksim_access_token";
+export const REFRESH_TOKEN_KEY = "stocksim_refresh_token";
 
 export const apiClient = axios.create({
   baseURL: "http://localhost:8080",

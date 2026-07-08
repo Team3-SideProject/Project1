@@ -1,10 +1,11 @@
 import axios from "axios";
 import type { LoginRequest, SignupRequest } from "../types/domain";
-import { ACCESS_TOKEN_KEY, apiClient } from "./httpClient";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, apiClient } from "./httpClient";
 
 type LoginResponse = {
   token?: string;
   accessToken?: string;
+  refreshToken?: string;
 };
 
 export async function login(request: LoginRequest): Promise<boolean> {
@@ -14,6 +15,9 @@ export async function login(request: LoginRequest): Promise<boolean> {
     const token = response.data.token ?? response.data.accessToken;
     if (token) {
       localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    }
+    if (response.data.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refreshToken);
     }
     return true;
   } catch (error) {
@@ -47,6 +51,13 @@ export async function getMyProfile() {
   }
 }
 
-export function logout() {
+export async function logout() {
+  try {
+    // Backend API: POST /api/auth/logout
+    await apiClient.post("/api/auth/logout");
+  } catch {
+    // 로그아웃 API가 실패해도 프론트 토큰은 제거합니다.
+  }
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }

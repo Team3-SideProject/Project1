@@ -233,8 +233,8 @@ function App() {
           <div className="top-actions">
             <input placeholder="종목 검색" />
             <button
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 navigate("/login");
               }}
             >
