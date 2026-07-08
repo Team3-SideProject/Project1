@@ -4,14 +4,15 @@ import type { LoginRequest } from "../types/domain";
 type LoginPageProps = {
   onLogin: (request: LoginRequest) => void;
   onGoSignup: () => void;
+  message?: string;
 };
 
-export function LoginPage({ onLogin, onGoSignup }: LoginPageProps) {
+export function LoginPage({ onLogin, onGoSignup, message }: LoginPageProps) {
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("password123");
 
   return (
-    <AuthLayout title="로그인" description="백엔드에 등록된 계정으로 로그인하세요.">
+    <AuthLayout title="로그인" description="백엔드에 등록된 계정으로 로그인하세요." message={message}>
       <label>
         이메일
         <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
@@ -33,10 +34,12 @@ export function LoginPage({ onLogin, onGoSignup }: LoginPageProps) {
 function AuthLayout({
   title,
   description,
+  message,
   children
 }: {
   title: string;
   description: string;
+  message?: string;
   children: ReactNode;
 }) {
   return (
@@ -62,6 +65,7 @@ function AuthLayout({
         <p className="eyebrow">Team3 Side Project</p>
         <h2>{title}</h2>
         <p>{description}</p>
+        {message && <p className="auth-message">{message}</p>}
         {children}
       </section>
     </main>

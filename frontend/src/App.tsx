@@ -140,7 +140,7 @@ function App() {
         return;
       }
       setMessage("회원가입이 완료되었습니다. 로그인 후 자산 정보를 확인해주세요.");
-      navigate("/");
+      navigate("/login");
     });
   };
 
@@ -192,11 +192,29 @@ function App() {
   };
 
   if (location.pathname === "/login") {
-    return <LoginPage onLogin={handleLogin} onGoSignup={() => navigate("/signup")} />;
+    return (
+      <LoginPage
+        message={message}
+        onLogin={handleLogin}
+        onGoSignup={() => {
+          setMessage("");
+          navigate("/signup");
+        }}
+      />
+    );
   }
 
   if (location.pathname === "/signup") {
-    return <SignupPage onSignup={handleSignup} onGoLogin={() => navigate("/login")} />;
+    return (
+      <SignupPage
+        message={message}
+        onSignup={handleSignup}
+        onGoLogin={() => {
+          setMessage("");
+          navigate("/login");
+        }}
+      />
+    );
   }
 
   const page = getPageFromPath(location.pathname);

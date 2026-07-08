@@ -164,6 +164,15 @@ input:focus {
   font-size: 2rem;
 }
 
+.auth-message {
+  margin-top: 1rem !important;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255, 194, 186, 0.34);
+  border-radius: 7px;
+  color: #ffc2ba !important;
+  background: rgba(255, 194, 186, 0.08);
+}
+
 .auth-panel label,
 .trade-panel label {
   display: grid;

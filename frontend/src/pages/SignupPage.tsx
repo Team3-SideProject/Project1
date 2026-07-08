@@ -4,16 +4,22 @@ import type { SignupRequest } from "../types/domain";
 type SignupPageProps = {
   onSignup: (request: SignupRequest) => void;
   onGoLogin: () => void;
+  message?: string;
 };
 
-export function SignupPage({ onSignup, onGoLogin }: SignupPageProps) {
+export function SignupPage({ onSignup, onGoLogin, message }: SignupPageProps) {
   const [email, setEmail] = useState("new-user@example.com");
   const [nickname, setNickname] = useState("stockUser");
   const [password, setPassword] = useState("password123");
   const [passwordConfirm, setPasswordConfirm] = useState("password123");
+  const [localMessage, setLocalMessage] = useState("");
 
   return (
-    <AuthLayout title="회원가입" description="가입 후 로그인하면 백엔드의 초기 자산 정보를 확인할 수 있습니다.">
+    <AuthLayout
+      title="회원가입"
+      description="가입 후 로그인하면 백엔드의 초기 자산 정보를 확인할 수 있습니다."
+      message={localMessage || message}
+    >
       <label>
         이메일
         <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
@@ -37,9 +43,12 @@ export function SignupPage({ onSignup, onGoLogin }: SignupPageProps) {
       <button
         className="primary-button"
         onClick={() => {
-          if (password === passwordConfirm) {
-            onSignup({ email, nickname, password });
+          if (password !== passwordConfirm) {
+            setLocalMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return;
           }
+          setLocalMessage("");
+          onSignup({ email, nickname, password });
         }}
       >
         회원가입
@@ -54,10 +63,12 @@ export function SignupPage({ onSignup, onGoLogin }: SignupPageProps) {
 function AuthLayout({
   title,
   description,
+  message,
   children
 }: {
   title: string;
   description: string;
+  message?: string;
   children: ReactNode;
 }) {
   return (
@@ -83,6 +94,7 @@ function AuthLayout({
         <p className="eyebrow">Team3 Side Project</p>
         <h2>{title}</h2>
         <p>{description}</p>
+        {message && <p className="auth-message">{message}</p>}
         {children}
       </section>
     </main>
