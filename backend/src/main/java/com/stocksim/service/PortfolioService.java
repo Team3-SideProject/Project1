@@ -1,13 +1,33 @@
 package com.stocksim.service;
 
+import com.stocksim.dto.PortfolioResponse;
+import com.stocksim.entity.Portfolio;
+import com.stocksim.entity.User;
+import com.stocksim.repository.PortfolioRepository;
+import com.stocksim.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PortfolioService {
-    public void getPortfolio() {
-        // TODO: 포트폴리오 조회 로직 구현
-        // 특정 유저의 총 자산(포트폴리오) : cash + (특정 stock의 갯수*그 stock의 현재 가)
-        // average_buy_price : stock_price_histories에서 특정 stock 샀을 때 가격 평균
-        // list로 넘겨야하나?
+
+    private final PortfolioRepository portfolioRepository;
+    private final UserRepository userRepository;
+
+    public PortfolioResponse getPortfolio(String email) {
+
+        // 1. 유저 정보 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        // 2. FETCH JOIN 메서드를 호출하여 Portfolio와 연관된 Stock을 한 번에 긁어옴 (N+1 문제 해결)
+        List<Portfolio> portfolios = portfolioRepository.findByUserIdWithStock(user.getId());
+
+        // 3. 복잡한 계산과 DTO 매핑은 PortfolioResponse 내부 메서드에 위임하여 한 줄로 끝냄
+        return PortfolioResponse.of(user, portfolios);
     }
 }
