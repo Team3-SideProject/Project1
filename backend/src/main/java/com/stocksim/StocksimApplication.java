@@ -2,10 +2,11 @@ package com.stocksim;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.EnableScheduling; // 추가
 
 @EnableScheduling // 스케쥴러 활성화
 @SpringBootApplication
+@EnableScheduling // 추가
 public class StocksimApplication {
 
 	public static void main(String[] args) {
