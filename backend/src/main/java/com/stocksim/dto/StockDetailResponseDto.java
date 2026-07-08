@@ -9,19 +9,15 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class StockDetailResponseDto {
-    private Long id;
-    private String code;
-    private String name;
-    private String description;
-    private BigDecimal currentPrice;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
+public record StockDetailResponseDto(
+    Long id,
+    String code,
+    String name,
+    String description,
+    BigDecimal currentPrice,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
+) {
     public static StockDetailResponseDto from(Stock stock) {
         return new StockDetailResponseDto(
                 stock.getId(),

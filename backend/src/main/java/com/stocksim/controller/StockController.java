@@ -1,8 +1,9 @@
-package com.stocksim.controller;
+package com.stocksim.controller; // 패키지 선언 수정
 
 import com.stocksim.dto.StockDetailResponseDto;
 import com.stocksim.dto.StockPriceResponseDto;
 import com.stocksim.dto.StockResponseDto;
+import com.stocksim.service.StockService; // StockService import 경로 수정
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -14,11 +14,15 @@ public class JwtTokenProvider {
 
     private final String secretString = "your-very-long-and-secure-secret-key-that-is-at-least-32-bytes";
     private final SecretKey key = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
-    private final long tokenValidityInMilliseconds = 3600000;
 
-    public String createToken(String email) {
+    // 🌟 시간 설정 분리 (밀리초 단위)
+    private final long accessTokenValidity = 1800000;      // 30분
+    private final long refreshTokenValidity = 1209600000;  // 14일 (2주일)
+
+    // 🌟 1. 짧은 토큰 (Access Token) 생성
+    public String createAccessToken(String email) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + tokenValidityInMilliseconds);
+        Date validity = new Date(now.getTime() + accessTokenValidity);
 
         return Jwts.builder()
                 .subject(email)
@@ -28,7 +32,21 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // 🌟 1. 토큰에서 유저 이메일(Subject)을 꺼내는 메서드
+    // 🌟 2. 긴 토큰 (Refresh Token) 생성
+    // 누구의 토큰인지 식별하기 위해 똑같이 email을 과자로 구워놓습니다.
+    public String createRefreshToken(String email) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidity);
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(key)
+                .compact();
+    }
+
+    // 토큰에서 유저 이메일(Subject)을 꺼내는 메서드 (기존 유지)
     public String getEmail(String token) {
         return Jwts.parser()
                 .verifyWith(key)
@@ -38,13 +56,13 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    // 🌟 2. 토큰이 유효한지(만료되진 않았는지, 위조되진 않았는지) 검증하는 메서드
+    // 토큰이 유효한지 검증하는 메서드 (기존 유지)
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            return false; // 토큰이 변조되었거나 만료되면 false를 반환합니다.
+            return false;
         }
     }
 }

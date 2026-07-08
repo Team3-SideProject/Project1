@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     // @Query("""(SQL문)""")를 사용해 커스텀 메서드 만들기 가능
@@ -29,3 +30,5 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     """)
     List<Portfolio> findAllWithUserAndStock();
 }
+
+Optional<Portfolio> findByUser_IdAndStock_Id(Long userId, Long stockId);
