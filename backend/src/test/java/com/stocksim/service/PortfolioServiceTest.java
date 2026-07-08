@@ -47,7 +47,7 @@ class PortfolioServiceTest {
         // 2. 유저 생성 (보유 현금: 500,000원)
         String targetEmail = "sangmin@test.com";
         User user = new User(targetEmail, "password", "안상민");
-        user.updateCash(new BigDecimal("500000"));
+        user.increaseCash(new BigDecimal("500000"));
         userRepository.save(user);
 
         // 3. 포트폴리오(매수 기록) 생성
