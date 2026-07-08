@@ -1,24 +1,34 @@
 package com.stocksim.service;
 
 import com.stocksim.dto.RankingResponse;
-import com.stocksim.repository.PortfolioRepository;
+import com.stocksim.entity.Ranking;
+import com.stocksim.repository.RankingRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RankingService {
-    private final PortfolioRepository portfolioRepository;
-    public RankingService(PortfolioRepository portfolioRepository) {
-        this.portfolioRepository = portfolioRepository;
-    }
 
-//    public List<RankingResponse> getRankings() {
-//        // TODO: 랭킹 조회 로직 구현
-//        // 포트폴리오 전재산 순으로 나열 -> 그 순서대로 userid, nickname, 전재산을 RankingResponse
-//    }
+    private final RankingRepository rankingRepository;
 
-    public void calcRanking(){
-        // TODO: 랭킹 계산 로직 구현
+    @Transactional(readOnly = true)
+    public List<RankingResponse> getRankings() {
+
+        List<Ranking> rankings =
+                rankingRepository.findAllByOrderByRankingAsc();
+
+        return rankings.stream()
+                .limit(100) // 100등까지 조회
+                .map(ranking -> new RankingResponse(
+                        ranking.getUserId(),
+                        ranking.getNickname(),
+                        ranking.getTotalAsset(),
+                        ranking.getRanking()
+                ))
+                .toList();
     }
 }

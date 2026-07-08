@@ -18,11 +18,13 @@ public class Trade {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // id 를 자동으로 증가하게 해주는 용도입니다.
     private Long id;
 
-    @Column(name = "user_id") // DB 컬럼명과 자바 필드를 연결합니다.
-    private Long userId; // 컬럼명을 자바의 변수명으로 변경
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "stock_id")
-    private Long stockId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
 
     @Column(name = "trade_type")
     private String tradeType; // 매수인지 매도인지
@@ -38,15 +40,15 @@ public class Trade {
     private LocalDateTime createdAt; // 거래 시간
 
     public Trade(
-            Long userId,
-            Long stockId,
+            User user,
+            Stock stock,
             String tradeType,
             Integer quantity,
             BigDecimal price,
             BigDecimal totalAmount
     ) {
-        this.userId = userId;
-        this.stockId = stockId;
+        this.user = user;
+        this.stock = stock;
         this.tradeType = tradeType;
         this.quantity = quantity;
         this.price = price;
