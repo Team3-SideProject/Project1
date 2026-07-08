@@ -18,8 +18,8 @@ public record TradeResponse ( // 프론트로 보낼 데이터 목록
     public static TradeResponse from(Trade trade) { // Entity 하나를 Response 하나로 바꿈
         return new TradeResponse(
                 trade.getId(),
-                trade.getUserId(),
-                trade.getStockId(),
+                trade.getUser().getId(),
+                trade.getStock().getId(),
                 trade.getTradeType(),
                 trade.getQuantity(),
                 trade.getPrice(),
