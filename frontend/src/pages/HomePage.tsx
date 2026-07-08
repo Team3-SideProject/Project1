@@ -78,9 +78,9 @@ export function HomePage({ cash, portfolio, stocks, onOpenStock }: HomePageProps
           </div>
         </div>
         <ul className="check-list">
-          <li>실제 주식 API 미사용</li>
+          <li>백엔드 API 우선 사용</li>
           <li>시장가 매수/매도만 지원</li>
-          <li>랭킹은 총 자산 기준</li>
+          <li>랭킹 API는 추후 연결</li>
           <li>거래 성공 시 내역 저장</li>
         </ul>
       </article>

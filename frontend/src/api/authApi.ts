@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { LoginRequest, SignupRequest } from "../types/domain";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, apiClient } from "./httpClient";
 
@@ -20,11 +19,8 @@ export async function login(request: LoginRequest): Promise<boolean> {
       localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refreshToken);
     }
     return true;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      return false;
-    }
-    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -33,11 +29,8 @@ export async function signup(request: SignupRequest): Promise<boolean> {
     // Backend API: POST /api/auth/signup
     await apiClient.post("/api/auth/signup", request);
     return true;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      return false;
-    }
-    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -47,7 +40,7 @@ export async function getMyProfile() {
     const response = await apiClient.get("/api/auth/me");
     return response.data;
   } catch {
-    return { id: 1, email: "user@example.com", nickname: "stockUser" };
+    return null;
   }
 }
 

@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchPath, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { login, logout, signup } from "./api/authApi";
-import { getHoldings, getPortfolio } from "./api/portfolioApi";
-import { getRankings } from "./api/rankingApi";
+import { getPortfolio } from "./api/portfolioApi";
 import { getStocks } from "./api/stockApi";
 import { buyStock, getTrades, sellStock } from "./api/tradeApi";
-import { initialHoldings, initialStocks, initialTrades, rankingUsers } from "./mocks";
+import { rankingUsers } from "./mocks";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { PortfolioPage } from "./pages/PortfolioPage";
@@ -34,24 +33,25 @@ function App() {
   const selectedStockId = Number.isFinite(routeStockId) && routeStockId > 0 ? routeStockId : 8;
 
   const [quantity, setQuantity] = useState(1);
-  const [cash, setCash] = useState(10_000_000);
-  const [holdings, setHoldings] = useState<Holding[]>(initialHoldings);
-  const [trades, setTrades] = useState<Trade[]>(initialTrades);
-  const [stocks, setStocks] = useState<Stock[]>(initialStocks);
+  const [cash, setCash] = useState(0);
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const [rankingData, setRankingData] = useState<RankingUser[]>(rankingUsers);
   const [message, setMessage] = useState("");
 
   const refreshDashboard = async () => {
-    const nextStocks = await getStocks();
-    const portfolioResponse = await getPortfolio();
-    const nextHoldings = portfolioResponse
-      ? toHoldings(portfolioResponse, nextStocks)
-      : await getHoldings();
+    const [nextStocks, portfolioResponse, nextTrades] = await Promise.all([
+      getStocks(),
+      getPortfolio(),
+      getTrades()
+    ]);
+    const nextHoldings = portfolioResponse ? toHoldings(portfolioResponse, nextStocks) : [];
 
     setStocks(nextStocks);
     setHoldings(nextHoldings);
-    setTrades(await getTrades());
-    setRankingData(await getRankings());
+    setTrades(nextTrades);
+    setRankingData(rankingUsers);
 
     if (portfolioResponse) {
       const stockValue = nextHoldings.reduce((sum, holding) => {
@@ -59,6 +59,8 @@ function App() {
         return sum + (stock?.currentPrice ?? 0) * holding.quantity;
       }, 0);
       setCash(Math.max(0, Number(portfolioResponse.totalAsset) - stockValue));
+    } else {
+      setCash(0);
     }
   };
 
@@ -66,22 +68,26 @@ function App() {
     refreshDashboard();
   }, []);
 
-  const selectedStock = stocks.find((stock) => stock.id === selectedStockId) ?? stocks[0] ?? initialStocks[0];
-  const selectedHolding = holdings.find((holding) => holding.stockId === selectedStock.id);
-  const tradeAmount = selectedStock.currentPrice * quantity;
+  const selectedStock = stocks.find((stock) => stock.id === selectedStockId) ?? stocks[0];
+  const selectedHolding = selectedStock
+    ? holdings.find((holding) => holding.stockId === selectedStock.id)
+    : undefined;
+  const tradeAmount = selectedStock ? selectedStock.currentPrice * quantity : 0;
 
   const portfolio: PortfolioSummary = useMemo(() => {
-    const rows = holdings.map((holding) => {
-      const stock = stocks.find((item) => item.id === holding.stockId) ?? initialStocks[0];
+    const rows = holdings.flatMap((holding) => {
+      const stock = stocks.find((item) => item.id === holding.stockId);
+      if (!stock) return [];
+
       const valuation = stock.currentPrice * holding.quantity;
       const principal = holding.averageBuyPrice * holding.quantity;
 
-      return {
+      return [{
         ...holding,
         stock,
         valuation,
         profitLoss: valuation - principal
-      };
+      }];
     });
 
     const stockValue = rows.reduce((sum, row) => sum + row.valuation, 0);
@@ -133,12 +139,17 @@ function App() {
         setMessage("회원가입에 실패했습니다. 입력값을 확인해주세요.");
         return;
       }
-      setMessage("회원가입이 완료되었습니다. 초기 자산 10,000,000원이 지급되었습니다.");
+      setMessage("회원가입이 완료되었습니다. 로그인 후 자산 정보를 확인해주세요.");
       navigate("/");
     });
   };
 
   const handleBuy = async () => {
+    if (!selectedStock) {
+      setMessage("종목 정보를 불러온 뒤 거래할 수 있습니다.");
+      return;
+    }
+
     if (quantity < 1) {
       setMessage("거래 수량은 1 이상이어야 합니다.");
       return;
@@ -150,36 +161,33 @@ function App() {
     }
 
     const trade = await buyStock({ stockId: selectedStock.id, quantity });
-    if (trade) {
-      await refreshDashboard();
-    } else {
-      setCash((currentCash) => currentCash - tradeAmount);
-      setHoldings((current) => updateHoldingAfterBuy(current, selectedStock, quantity));
-      setTrades((current) => [
-        createTrade("BUY", current.length + 1, selectedStock, quantity),
-        ...current
-      ]);
+    if (!trade) {
+      setMessage("매수 요청에 실패했습니다. 로그인 상태와 백엔드 API를 확인해주세요.");
+      return;
     }
+
+    await refreshDashboard();
     setMessage(`${selectedStock.code} ${quantity}주 매수가 완료되었습니다.`);
   };
 
   const handleSell = async () => {
+    if (!selectedStock) {
+      setMessage("종목 정보를 불러온 뒤 거래할 수 있습니다.");
+      return;
+    }
+
     if (!selectedHolding || selectedHolding.quantity < quantity) {
       setMessage("보유 주식 수량이 부족합니다.");
       return;
     }
 
     const trade = await sellStock({ stockId: selectedStock.id, quantity });
-    if (trade) {
-      await refreshDashboard();
-    } else {
-      setCash((currentCash) => currentCash + tradeAmount);
-      setHoldings((current) => updateHoldingAfterSell(current, selectedStock.id, quantity));
-      setTrades((current) => [
-        createTrade("SELL", current.length + 1, selectedStock, quantity),
-        ...current
-      ]);
+    if (!trade) {
+      setMessage("매도 요청에 실패했습니다. 로그인 상태와 백엔드 API를 확인해주세요.");
+      return;
     }
+
+    await refreshDashboard();
     setMessage(`${selectedStock.code} ${quantity}주 매도가 완료되었습니다.`);
   };
 
@@ -227,7 +235,7 @@ function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">REST API Mock UI</p>
+            <p className="eyebrow">REST API Connected UI</p>
             <h1>{getPageTitle(page)}</h1>
           </div>
           <div className="top-actions">
@@ -260,16 +268,20 @@ function App() {
           <Route
             path="/stocks/:stockId"
             element={
-              <StockDetailPage
-                stock={selectedStock}
-                holdingQuantity={selectedHolding?.quantity ?? 0}
-                quantity={quantity}
-                tradeAmount={tradeAmount}
-                onQuantityChange={setQuantity}
-                onBuy={handleBuy}
-                onSell={handleSell}
-                onBack={() => navigate("/")}
-              />
+              selectedStock ? (
+                <StockDetailPage
+                  stock={selectedStock}
+                  holdingQuantity={selectedHolding?.quantity ?? 0}
+                  quantity={quantity}
+                  tradeAmount={tradeAmount}
+                  onQuantityChange={setQuantity}
+                  onBuy={handleBuy}
+                  onSell={handleSell}
+                  onBack={() => navigate("/")}
+                />
+              ) : (
+                <EmptyState message="종목 데이터를 불러오지 못했습니다. 백엔드 /api/stocks 응답을 확인해주세요." />
+              )
             }
           />
           <Route path="/portfolio" element={<PortfolioPage portfolio={portfolio} onOpenStock={goToStock} />} />
@@ -282,54 +294,6 @@ function App() {
   );
 }
 
-function createTrade(type: "BUY" | "SELL", id: number, stock: Stock, quantity: number): Trade {
-  return {
-    id,
-    type,
-    stockId: stock.id,
-    quantity,
-    price: stock.currentPrice,
-    createdAt: "2026-06-23 15:00"
-  };
-}
-
-function updateHoldingAfterBuy(current: Holding[], stock: Stock, quantity: number): Holding[] {
-  const owned = current.find((holding) => holding.stockId === stock.id);
-  if (!owned) {
-    return [
-      ...current,
-      {
-        stockId: stock.id,
-        quantity,
-        averageBuyPrice: stock.currentPrice
-      }
-    ];
-  }
-
-  return current.map((holding) => {
-    if (holding.stockId !== stock.id) return holding;
-    const nextQuantity = holding.quantity + quantity;
-    const nextAveragePrice =
-      (holding.averageBuyPrice * holding.quantity + stock.currentPrice * quantity) / nextQuantity;
-
-    return {
-      ...holding,
-      quantity: nextQuantity,
-      averageBuyPrice: nextAveragePrice
-    };
-  });
-}
-
-function updateHoldingAfterSell(current: Holding[], stockId: number, quantity: number): Holding[] {
-  return current
-    .map((holding) =>
-      holding.stockId === stockId
-        ? { ...holding, quantity: holding.quantity - quantity }
-        : holding
-    )
-    .filter((holding) => holding.quantity > 0);
-}
-
 function toHoldings(portfolio: PortfolioApiResponse, stocks: Stock[]): Holding[] {
   return portfolio.stocks.map((item, index) => {
     const stock = stocks.find((candidate) => candidate.code === item.code);
@@ -340,6 +304,17 @@ function toHoldings(portfolio: PortfolioApiResponse, stocks: Stock[]): Holding[]
       averageBuyPrice: Number(item.averageBuyPrice)
     };
   });
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <section className="content-grid">
+      <article className="panel">
+        <h2>데이터 없음</h2>
+        <p>{message}</p>
+      </article>
+    </section>
+  );
 }
 
 function getPageTitle(page: Page) {

@@ -1,4 +1,3 @@
-import { initialTrades } from "../mocks";
 import type { Trade } from "../types/domain";
 import { apiClient } from "./httpClient";
 
@@ -36,7 +35,7 @@ export async function getTrades(): Promise<Trade[]> {
     const response = await apiClient.get<TradeResponse[]>("/api/trades/me");
     return response.data.map(toTrade);
   } catch {
-    return initialTrades;
+    return [];
   }
 }
 

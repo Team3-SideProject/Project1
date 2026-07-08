@@ -13,7 +13,7 @@ export function SignupPage({ onSignup, onGoLogin }: SignupPageProps) {
   const [passwordConfirm, setPasswordConfirm] = useState("password123");
 
   return (
-    <AuthLayout title="회원가입" description="가입 즉시 가상 현금 10,000,000원이 지급됩니다.">
+    <AuthLayout title="회원가입" description="가입 후 로그인하면 백엔드의 초기 자산 정보를 확인할 수 있습니다.">
       <label>
         이메일
         <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
@@ -65,12 +65,12 @@ function AuthLayout({
       <section className="auth-brand">
         <span className="logo-mark">S</span>
         <h1>StockSim</h1>
-        <p>더미 주식 데이터와 가상 자산으로 매수/매도, 포트폴리오, 랭킹 흐름을 검증합니다.</p>
+        <p>백엔드 API와 가상 자산으로 매수/매도, 포트폴리오, 거래 내역 흐름을 검증합니다.</p>
         <div className="market-strip">
           <span>회원가입</span>
           <span>주식 조회</span>
           <span>매수/매도</span>
-          <span>랭킹</span>
+          <span>거래 내역</span>
         </div>
         <div className="mini-bars">
           {[42, 48, 44, 52, 58, 62, 57, 69, 74, 82].map((value, index) => (

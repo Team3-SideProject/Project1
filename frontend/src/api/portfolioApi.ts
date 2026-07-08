@@ -1,4 +1,3 @@
-import { initialHoldings } from "../mocks";
 import type { Holding, PortfolioApiResponse } from "../types/domain";
 import { apiClient } from "./httpClient";
 
@@ -19,6 +18,6 @@ export async function getHoldings(): Promise<Holding[]> {
     const data = response.data;
     return data.holdings ?? data.rows ?? data;
   } catch {
-    return initialHoldings;
+    return [];
   }
 }
