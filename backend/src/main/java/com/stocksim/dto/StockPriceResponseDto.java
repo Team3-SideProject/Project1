@@ -1,6 +1,6 @@
 package com.stocksim.dto;
 
-import com.stocksim.stock.Stock;
+import com.stocksim.entity.Stock;
 import java.math.BigDecimal;
 
 public record StockPriceResponseDto(
