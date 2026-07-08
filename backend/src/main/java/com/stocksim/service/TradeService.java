@@ -47,6 +47,7 @@ public class TradeService {
     }
 
     //현재 로그인한 사용자 거래내역 조회
+    @Transactional(readOnly = true)
     public List<TradeResponse> findMyTrades(String authorization) {
         User user = getLoggedUser(authorization);
         return tradeRepository.findByUserId(user.getId())
@@ -81,13 +82,14 @@ public class TradeService {
         BigDecimal quantity = BigDecimal.valueOf(request.quantity());
         BigDecimal totalAmount = price.multiply(quantity);
 
+        Portfolio portfolio;
         //거래 타입에 따라 해당 로직 실행
         if(tradeType.equals("BUY")) {
-            Portfolio portfolio = portfolioRepository
-                    .findByUserIdAndStockId(userId,stock.getId()) //포트폴리오 수량 변동 관련
+            portfolio = portfolioRepository
+                    .findByUser_IdAndStock_Id(userId,stock.getId()) //포트폴리오 수량 변동 관련
                     .orElseGet(()->new Portfolio(      // 포트폴리오 연결(유저와 해당 유저의 주식 수량 가져오기, 해당 유저가 해당 주식이 없을경우 새로 생성)
-                            userId,
-                            stock.getId(),
+                            user,
+                            stock,
                             0,
                             BigDecimal.ZERO
                     ));
@@ -99,10 +101,9 @@ public class TradeService {
                     "BUY"
             );
             cashHistoryRepository.save(cashHistory);
-            portfolioRepository.save(portfolio);
         }else if(tradeType.equals("SELL")) {
-            Portfolio portfolio = portfolioRepository
-                    .findByUserIdAndStockId(userId,stock.getId())
+            portfolio = portfolioRepository
+                    .findByUser_IdAndStock_Id(userId,stock.getId())
                     .orElseThrow(()->new IllegalArgumentException("보유하지 않은 주식입니다"));
             portfolio.sell(request.quantity());
             user.increaseCash(totalAmount);
@@ -112,12 +113,14 @@ public class TradeService {
                     "SELL"
             );
             cashHistoryRepository.save(cashHistory);
-            portfolioRepository.save(portfolio);
+        }else{
+            throw new IllegalArgumentException("잘못된 거래 타입입니다.");
         }
+        portfolioRepository.save(portfolio);
         //레포지토리 저장
         Trade trade = new Trade(
-                userId,
-                stock.getId(),
+                user,
+                stock,
                 tradeType,
                 request.quantity(),
                 price,

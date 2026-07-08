@@ -29,6 +29,5 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
         JOIN FETCH p.stock
     """)
     List<Portfolio> findAllWithUserAndStock();
+    Optional<Portfolio> findByUser_IdAndStock_Id(Long userId, Long stockId);
 }
-
-Optional<Portfolio> findByUser_IdAndStock_Id(Long userId, Long stockId);
