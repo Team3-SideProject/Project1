@@ -14,6 +14,7 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
 
     List<Portfolio> findByUserId(Long userId);
 
+    // 특정 유저의 모든 Portfolio를 조회하면서 Stock도 한 번에 가져옴
     @Query("""
         SELECT p 
         FROM Portfolio p 
@@ -22,6 +23,7 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     """)
     List<Portfolio> findByUserIdWithStock(@Param("userId") Long userId);
 
+    // 모든 Portfolio를 조회하면서 User와 Stock까지 한 번에 가져옴
     @Query("""
         SELECT p
         FROM Portfolio p
@@ -29,5 +31,6 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
         JOIN FETCH p.stock
     """)
     List<Portfolio> findAllWithUserAndStock();
+
     Optional<Portfolio> findByUser_IdAndStock_Id(Long userId, Long stockId);
 }
