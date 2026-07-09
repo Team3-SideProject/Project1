@@ -1,40 +1,56 @@
 import type { LoginRequest, SignupRequest } from "../types/domain";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, apiClient } from "./httpClient";
 
-const API_BASE_URL = "http://localhost:8080";
+type LoginResponse = {
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
+};
 
-export async function login(request: LoginRequest): Promise<void> {
+export async function login(request: LoginRequest): Promise<boolean> {
   try {
     // Backend API: POST /api/auth/login
-    await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request)
-    });
+    const response = await apiClient.post<LoginResponse>("/api/auth/login", request);
+    const token = response.data.token ?? response.data.accessToken;
+    if (token) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    }
+    if (response.data.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refreshToken);
+    }
+    return true;
   } catch {
-    return;
+    return false;
   }
 }
 
-export async function signup(request: SignupRequest): Promise<void> {
+export async function signup(request: SignupRequest): Promise<boolean> {
   try {
     // Backend API: POST /api/auth/signup
-    await fetch(`${API_BASE_URL}/api/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request)
-    });
+    await apiClient.post("/api/auth/signup", request);
+    return true;
   } catch {
-    return;
+    return false;
   }
 }
 
 export async function getMyProfile() {
   try {
     // Backend API: GET /api/auth/me
-    const response = await fetch(`${API_BASE_URL}/api/auth/me`);
-    if (!response.ok) throw new Error("내 정보 조회 실패");
-    return await response.json();
+    const response = await apiClient.get("/api/auth/me");
+    return response.data;
   } catch {
-    return { id: 1, email: "user@example.com", nickname: "stockUser" };
+    return null;
   }
+}
+
+export async function logout() {
+  try {
+    // Backend API: POST /api/auth/logout
+    await apiClient.post("/api/auth/logout");
+  } catch {
+    // 로그아웃 API가 실패해도 프론트 토큰은 제거합니다.
+  }
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }

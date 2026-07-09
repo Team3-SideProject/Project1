@@ -1,16 +1,23 @@
-import { initialHoldings } from "../mocks";
-import type { Holding } from "../types/domain";
+import type { Holding, PortfolioApiResponse } from "../types/domain";
+import { apiClient } from "./httpClient";
 
-const API_BASE_URL = "http://localhost:8080";
+export async function getPortfolio(): Promise<PortfolioApiResponse | null> {
+  try {
+    // Backend API: GET /api/portfolio/me
+    const response = await apiClient.get<PortfolioApiResponse>("/api/portfolio/me");
+    return response.data;
+  } catch {
+    return null;
+  }
+}
 
 export async function getHoldings(): Promise<Holding[]> {
   try {
     // Backend API: GET /api/portfolio/me
-    const response = await fetch(`${API_BASE_URL}/api/portfolio/me`);
-    if (!response.ok) throw new Error("포트폴리오 조회 실패");
-    const data = await response.json();
+    const response = await apiClient.get("/api/portfolio/me");
+    const data = response.data;
     return data.holdings ?? data.rows ?? data;
   } catch {
-    return initialHoldings;
+    return [];
   }
 }

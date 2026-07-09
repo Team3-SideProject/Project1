@@ -1,22 +1,27 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { LoginRequest } from "../types/domain";
 
 type LoginPageProps = {
-  onLogin: () => void;
+  onLogin: (request: LoginRequest) => void;
   onGoSignup: () => void;
+  message?: string;
 };
 
-export function LoginPage({ onLogin, onGoSignup }: LoginPageProps) {
+export function LoginPage({ onLogin, onGoSignup, message }: LoginPageProps) {
+  const [email, setEmail] = useState("user@example.com");
+  const [password, setPassword] = useState("password123");
+
   return (
-    <AuthLayout title="로그인" description="더미 계정으로 MVP 화면을 확인하세요.">
+    <AuthLayout title="로그인" description="백엔드에 등록된 계정으로 로그인하세요." message={message}>
       <label>
         이메일
-        <input defaultValue="user@example.com" type="email" />
+        <input value={email} type="email" onChange={(event) => setEmail(event.target.value)} />
       </label>
       <label>
         비밀번호
-        <input defaultValue="password123" type="password" />
+        <input value={password} type="password" onChange={(event) => setPassword(event.target.value)} />
       </label>
-      <button className="primary-button" onClick={onLogin}>
+      <button className="primary-button" onClick={() => onLogin({ email, password })}>
         로그인
       </button>
       <button className="ghost-button" onClick={onGoSignup}>
@@ -29,10 +34,12 @@ export function LoginPage({ onLogin, onGoSignup }: LoginPageProps) {
 function AuthLayout({
   title,
   description,
+  message,
   children
 }: {
   title: string;
   description: string;
+  message?: string;
   children: ReactNode;
 }) {
   return (
@@ -40,12 +47,12 @@ function AuthLayout({
       <section className="auth-brand">
         <span className="logo-mark">S</span>
         <h1>StockSim</h1>
-        <p>더미 주식 데이터와 가상 자산으로 매수/매도, 포트폴리오, 랭킹 흐름을 검증합니다.</p>
+        <p>백엔드 API와 가상 자산으로 매수/매도, 포트폴리오, 거래 내역 흐름을 검증합니다.</p>
         <div className="market-strip">
           <span>회원가입</span>
           <span>주식 조회</span>
           <span>매수/매도</span>
-          <span>랭킹</span>
+          <span>거래 내역</span>
         </div>
         <div className="mini-bars">
           {[42, 48, 44, 52, 58, 62, 57, 69, 74, 82].map((value, index) => (
@@ -58,6 +65,7 @@ function AuthLayout({
         <p className="eyebrow">Team3 Side Project</p>
         <h2>{title}</h2>
         <p>{description}</p>
+        {message && <p className="auth-message">{message}</p>}
         {children}
       </section>
     </main>

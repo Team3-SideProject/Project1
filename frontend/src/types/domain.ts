@@ -45,6 +45,24 @@ export type PortfolioSummary = {
   profitLoss: number;
 };
 
+export type PortfolioStockResponse = {
+  code: string;
+  name: string;
+  quantity: number;
+  averageBuyPrice: number | string;
+  currentPrice: number | string;
+  evaluationAmount: number | string;
+};
+
+export type PortfolioApiResponse = {
+  id: number;
+  nickname: string;
+  totalAsset: number | string;
+  totalPurchase: number | string;
+  totalProfit: number | string;
+  stocks: PortfolioStockResponse[];
+};
+
 export type RankingRow = RankingUser & {
   totalAsset: number;
   rank: number;
