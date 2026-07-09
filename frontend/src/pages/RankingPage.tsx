@@ -12,20 +12,21 @@ export function RankingPage({ rankings, currentNickname }: RankingPageProps) {
       <div className="panel-header">
         <div>
           <h2>자산 랭킹</h2>
-          <span>GET /api/rankings/assets</span>
+          <span>GET /api/rankings</span>
         </div>
         <strong>Top {rankings.length}</strong>
       </div>
       <div className="ranking-list">
         {rankings.map((user) => (
-          <div className={user.nickname === currentNickname ? "rank-row current" : "rank-row"} key={user.nickname}>
+          <div className={user.nickname === currentNickname ? "rank-row current" : "rank-row"} key={user.userId}>
             <span>#{user.rank}</span>
             <strong>{user.nickname}</strong>
-            <em>현금 {formatWon(user.cash)}</em>
-            <em>주식 {formatWon(user.stockValue)}</em>
             <b>{formatWon(user.totalAsset)}</b>
           </div>
         ))}
+        {rankings.length === 0 && (
+          <p className="empty-text">랭킹 데이터가 없습니다. 백엔드 랭킹 집계 또는 /api/rankings 응답을 확인해주세요.</p>
+        )}
       </div>
     </article>
   );

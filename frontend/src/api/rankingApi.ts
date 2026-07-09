@@ -1,13 +1,21 @@
-import { rankingUsers } from "../mocks";
-import type { RankingUser } from "../types/domain";
+import type { RankingApiResponse, RankingRow } from "../types/domain";
 import { apiClient } from "./httpClient";
 
-export async function getRankings(): Promise<RankingUser[]> {
+function toRankingRow(response: RankingApiResponse): RankingRow {
+  return {
+    userId: Number(response.userId),
+    nickname: response.nickname,
+    totalAsset: Number(response.totalAsset),
+    rank: Number(response.ranking)
+  };
+}
+
+export async function getRankings(): Promise<RankingRow[]> {
   try {
-    // Backend API: GET /api/rankings/assets
-    const response = await apiClient.get<RankingUser[]>("/api/rankings/assets");
-    return response.data;
+    // Backend API: GET /api/rankings
+    const response = await apiClient.get<RankingApiResponse[]>("/api/rankings");
+    return response.data.map(toRankingRow);
   } catch {
-    return rankingUsers;
+    return [];
   }
 }

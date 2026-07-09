@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { matchPath, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { login, logout, signup } from "./api/authApi";
 import { getPortfolio } from "./api/portfolioApi";
+import { getRankings } from "./api/rankingApi";
 import { getStocks } from "./api/stockApi";
 import { buyStock, getTrades, sellStock } from "./api/tradeApi";
-import { rankingUsers } from "./mocks";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { PortfolioPage } from "./pages/PortfolioPage";
@@ -18,7 +18,7 @@ import type {
   Page,
   PortfolioApiResponse,
   PortfolioSummary,
-  RankingUser,
+  RankingRow,
   SignupRequest,
   Stock,
   Trade
@@ -37,23 +37,26 @@ function App() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
-  const [rankingData, setRankingData] = useState<RankingUser[]>(rankingUsers);
+  const [rankingData, setRankingData] = useState<RankingRow[]>([]);
+  const [currentNickname, setCurrentNickname] = useState("stockUser");
   const [message, setMessage] = useState("");
 
   const refreshDashboard = async () => {
-    const [nextStocks, portfolioResponse, nextTrades] = await Promise.all([
+    const [nextStocks, portfolioResponse, nextTrades, nextRankings] = await Promise.all([
       getStocks(),
       getPortfolio(),
-      getTrades()
+      getTrades(),
+      getRankings()
     ]);
     const nextHoldings = portfolioResponse ? toHoldings(portfolioResponse, nextStocks) : [];
 
     setStocks(nextStocks);
     setHoldings(nextHoldings);
     setTrades(nextTrades);
-    setRankingData(rankingUsers);
+    setRankingData(nextRankings);
 
     if (portfolioResponse) {
+      setCurrentNickname(portfolioResponse.nickname);
       const stockValue = nextHoldings.reduce((sum, holding) => {
         const stock = nextStocks.find((item) => item.id === holding.stockId);
         return sum + (stock?.currentPrice ?? 0) * holding.quantity;
@@ -102,18 +105,10 @@ function App() {
     };
   }, [cash, holdings, stocks]);
 
-  const rankings = useMemo(() => {
-    const userRanking = {
-      nickname: "stockUser",
-      cash: portfolio.cash,
-      stockValue: portfolio.stockValue
-    };
-
-    return [...rankingData, userRanking]
-      .map((user) => ({ ...user, totalAsset: user.cash + user.stockValue }))
-      .sort((a, b) => b.totalAsset - a.totalAsset)
-      .map((user, index) => ({ ...user, rank: index + 1 }));
-  }, [portfolio.cash, portfolio.stockValue, rankingData]);
+  const rankings = useMemo(
+    () => [...rankingData].sort((a, b) => a.rank - b.rank),
+    [rankingData]
+  );
 
   const goToStock = (stockId: number) => {
     setQuantity(1);
@@ -304,7 +299,7 @@ function App() {
           />
           <Route path="/portfolio" element={<PortfolioPage portfolio={portfolio} onOpenStock={goToStock} />} />
           <Route path="/trades" element={<TradesPage trades={trades} stocks={stocks} />} />
-          <Route path="/ranking" element={<RankingPage rankings={rankings} currentNickname="stockUser" />} />
+          <Route path="/ranking" element={<RankingPage rankings={rankings} currentNickname={currentNickname} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </section>

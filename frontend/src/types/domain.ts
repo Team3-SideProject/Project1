@@ -31,6 +31,13 @@ export type RankingUser = {
   stockValue: number;
 };
 
+export type RankingApiResponse = {
+  userId: number;
+  nickname: string;
+  totalAsset: number | string;
+  ranking: number;
+};
+
 export type PortfolioRow = Holding & {
   stock: Stock;
   valuation: number;
@@ -63,7 +70,9 @@ export type PortfolioApiResponse = {
   stocks: PortfolioStockResponse[];
 };
 
-export type RankingRow = RankingUser & {
+export type RankingRow = {
+  userId: number;
+  nickname: string;
   totalAsset: number;
   rank: number;
 };
