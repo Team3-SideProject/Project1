@@ -541,7 +541,7 @@ tbody tr:hover {
 
 .rank-row {
   display: grid;
-  grid-template-columns: 4rem minmax(10rem, 1fr) minmax(10rem, 0.8fr) minmax(10rem, 0.8fr) minmax(11rem, 0.9fr);
+  grid-template-columns: 4rem minmax(10rem, 1fr) minmax(11rem, 0.9fr);
   gap: 0.8rem;
   align-items: center;
   min-height: 3.8rem;
@@ -563,6 +563,12 @@ tbody tr:hover {
 
 .rank-row b {
   text-align: right;
+}
+
+.empty-text {
+  margin: 0;
+  padding: 1rem;
+  color: #9aa49e;
 }
 
 .up {

@@ -80,7 +80,7 @@ export function HomePage({ cash, portfolio, stocks, onOpenStock }: HomePageProps
         <ul className="check-list">
           <li>백엔드 API 우선 사용</li>
           <li>시장가 매수/매도만 지원</li>
-          <li>랭킹 API는 추후 연결</li>
+          <li>랭킹 API 연결</li>
           <li>거래 성공 시 내역 저장</li>
         </ul>
       </article>
