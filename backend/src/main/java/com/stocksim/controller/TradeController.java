@@ -4,6 +4,8 @@ import com.stocksim.dto.TradeRequest;
 import com.stocksim.dto.TradeResponse;
 import com.stocksim.service.TradeService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,16 +19,27 @@ public class TradeController {
     public TradeController(TradeService tradeService) {
         this.tradeService = tradeService;
     }
+    @Operation(summary = "거래 내역 조회", security = @SecurityRequirement(name = "JWT_AUTH"))
     @GetMapping("/me") // 공통 주소 뒤에 /me가 붙어 GET /api/trades/me가 됩니다.
-    public List<TradeResponse> findByTrades(){
-        return tradeService.findMyTrades(); // 서비스의 내 거래내역 조회 로직 실행
+    public List<TradeResponse> findByTrades(
+            @RequestHeader ("Authorization") String authorization
+    ){
+        return tradeService.findMyTrades(authorization); // 서비스의 내 거래내역 조회 로직 실행
     }
+    @Operation(summary = "구매 진행", security = @SecurityRequirement(name = "JWT_AUTH"))
     @PostMapping ("/buy")
-    public TradeResponse buy(@RequestBody TradeRequest request){ // JSON 의 BODY 를 Request로 변환 , buy 실행
-        return tradeService.buy(request); //tradeResponse 로 반환 프론트로 추출
+    public TradeResponse buy(
+            @RequestBody TradeRequest request,
+            @RequestHeader ("Authorization")  String authorization // 토큰 받기
+            ){ // JSON 의 BODY 를 Request로 변환 , buy 실행
+        return tradeService.buy(request, authorization); //tradeResponse 로 반환 프론트로 추출
     }
+    @Operation(summary = "판매 진행", security = @SecurityRequirement(name = "JWT_AUTH"))
     @PostMapping("/sell")
-    public TradeResponse sell(@RequestBody TradeRequest request){
-        return tradeService.sell(request);
+    public TradeResponse sell(
+            @RequestBody TradeRequest request,
+            @RequestHeader ("Authorization")   String authorization
+            ){
+        return tradeService.sell(request, authorization);
     }
 }

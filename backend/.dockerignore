@@ -1,0 +1,9 @@
+.gradle
+build
+.idea
+.postman
+postman
+*.log
+.DS_Store
+HELP.md
+README.md

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IllegalAccessError.class) // IllegalAccessError 발생시 아래 실행
-    public ErrorResponse handleIllegalAccessError(IllegalAccessError e){
+    @ExceptionHandler(IllegalArgumentException.class) // IllegalArgumentException 발생시 아래 실행
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e){
         return new ErrorResponse(e.getMessage()); // 에러 메세지 프론트 전송(throw 받은 메세지로)
     }
 }
