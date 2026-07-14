@@ -352,7 +352,7 @@ npm install
 npm run dev
 ```
 
-브라우저에서 `http://127.0.0.1:5173/`로 접속합니다.
+브라우저에서 `http://localhost:5173/`로 접속합니다.
 
 ```bash
 # backend

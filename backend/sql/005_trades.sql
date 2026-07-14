@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL UNIQUE,
   nickname VARCHAR(50) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  cash DECIMAL(15, 2) NOT NULL DEFAULT 10000000.00,
+  cash DECIMAL(19, 2) NOT NULL DEFAULT 1000000.00,
+  refresh_token VARCHAR(500) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -24,10 +25,13 @@ CREATE TABLE IF NOT EXISTS trades (
   stock_id BIGINT NOT NULL,
   trade_type VARCHAR(10) NOT NULL CHECK (trade_type IN ('BUY', 'SELL')),
   quantity INT NOT NULL CHECK (quantity > 0),
-  price DECIMAL(15, 2) NOT NULL CHECK (price > 0),
-  total_amount DECIMAL(15, 2) NOT NULL CHECK (total_amount > 0),
+  price DECIMAL(19, 2) NOT NULL CHECK (price > 0),
+  total_amount DECIMAL(19, 2) NOT NULL CHECK (total_amount > 0),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
   INDEX idx_trades_user_id_created_at (user_id, created_at DESC),
+  INDEX idx_trades_stock_id (stock_id),
+
   CONSTRAINT fk_trades_user
     FOREIGN KEY (user_id) REFERENCES users(id),
   CONSTRAINT fk_trades_stock

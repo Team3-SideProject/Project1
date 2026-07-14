@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchPath, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { login, logout, signup } from "./api/authApi";
+import { getMyProfile, login, logout, signup } from "./api/authApi";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "./api/httpClient";
 import { getPortfolio } from "./api/portfolioApi";
 import { getRankings } from "./api/rankingApi";
 import { getStocks } from "./api/stockApi";
@@ -25,9 +26,12 @@ import type {
 } from "./types/domain";
 import { formatWon } from "./utils/format";
 
+type AuthStatus = "checking" | "guest" | "authenticated";
+
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
   const stockMatch = matchPath("/stocks/:stockId", location.pathname);
   const routeStockId = Number(stockMatch?.params.stockId);
   const selectedStockId = Number.isFinite(routeStockId) && routeStockId > 0 ? routeStockId : 8;
@@ -40,6 +44,7 @@ function App() {
   const [rankingData, setRankingData] = useState<RankingRow[]>([]);
   const [currentNickname, setCurrentNickname] = useState("stockUser");
   const [message, setMessage] = useState("");
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
 
   const refreshDashboard = async () => {
     const [nextStocks, portfolioResponse, nextTrades, nextRankings] = await Promise.all([
@@ -68,7 +73,40 @@ function App() {
   };
 
   useEffect(() => {
-    refreshDashboard();
+    let ignore = false;
+
+    async function checkAuth() {
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      if (!token) {
+        if (!ignore) {
+          setAuthStatus("guest");
+        }
+        return;
+      }
+
+      const profile = await getMyProfile();
+      if (ignore) return;
+
+      if (!profile) {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        setAuthStatus("guest");
+        if (!isAuthPage) {
+          navigate("/login", { replace: true });
+        }
+        return;
+      }
+
+      setCurrentNickname(profile.nickname ?? "stockUser");
+      setAuthStatus("authenticated");
+      await refreshDashboard();
+    }
+
+    checkAuth();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const selectedStock = stocks.find((stock) => stock.id === selectedStockId) ?? stocks[0];
@@ -123,6 +161,7 @@ function App() {
         return;
       }
       setMessage("");
+      setAuthStatus("authenticated");
       refreshDashboard();
       navigate("/");
     });
@@ -185,6 +224,29 @@ function App() {
     await refreshDashboard();
     setMessage(`${selectedStock.code} ${quantity}주 매도가 완료되었습니다.`);
   };
+
+  const handleLogout = async () => {
+    await logout();
+    setAuthStatus("guest");
+    setCash(0);
+    setHoldings([]);
+    setTrades([]);
+    setRankingData([]);
+    setMessage("");
+    navigate("/login");
+  };
+
+  if (authStatus === "checking") {
+    return <LoadingScreen />;
+  }
+
+  if (authStatus === "guest" && !isAuthPage) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (authStatus === "authenticated" && isAuthPage) {
+    return <Navigate to="/" replace />;
+  }
 
   if (location.pathname === "/login") {
     return (
@@ -254,10 +316,7 @@ function App() {
           <div className="top-actions">
             <input placeholder="종목 검색" />
             <button
-              onClick={async () => {
-                await logout();
-                navigate("/login");
-              }}
+              onClick={handleLogout}
             >
               로그아웃
             </button>
@@ -302,6 +361,18 @@ function App() {
           <Route path="/ranking" element={<RankingPage rankings={rankings} currentNickname={currentNickname} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </section>
+    </main>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <main className="auth-shell">
+      <section className="auth-panel">
+        <p className="eyebrow">StockSim</p>
+        <h2>인증 확인 중</h2>
+        <p>잠시만 기다려주세요.</p>
       </section>
     </main>
   );
